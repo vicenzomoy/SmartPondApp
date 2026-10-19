@@ -3,6 +3,12 @@
 
 SmartPond adalah sistem pemantauan dan pengendalian kolam ikan berbasis IoT yang dirancang untuk membantu menjaga kondisi kolam, mengelola penggunaan energi, dan mendukung keberlangsungan hidup ikan. Sistem ini mengintegrasikan aplikasi Android, ESP32, sensor kualitas air, pompa DC, turbin angin, baterai cadangan, serta pemberi pakan otomatis.
 
+## 👥 Anggota
+1. Antonius Tanoto (03081240008)
+2. Gilbert Chandra (03081240007)
+3. Louis Andrew (03081240050)
+4. Vicenzo (03081240005)
+
 ## 📱 Fitur Aplikasi Android
 
 ### 1. Dashboard Monitoring dan Kontrol
