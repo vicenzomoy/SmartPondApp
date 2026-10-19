@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="sp_background">#F2F9FB</color>
+    <color name="sp_navy">#073B67</color>
+    <color name="sp_teal">#009F91</color>
+    <color name="sp_green">#20B978</color>
+    <color name="sp_muted">#6B7F8D</color>
+    <color name="sp_hint">#9AAAB4</color>
 </resources>
