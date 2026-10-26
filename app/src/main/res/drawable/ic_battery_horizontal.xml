@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="90dp"
+    android:height="50dp"
+    android:viewportWidth="90"
+    android:viewportHeight="50">
+    <!-- Outer Battery Shell -->
+    <path
+        android:fillColor="#20B978"
+        android:pathData="M8,8 h68 a6,6 0 0 1 6,6 v22 a6,6 0 0 1 -6,6 h-68 a6,6 0 0 1 -6,-6 v-22 a6,6 0 0 1 6,-6 z" />
+    <!-- Battery Inner Cavity Background -->
+    <path
+        android:fillColor="#158C5A"
+        android:fillAlpha="0.3"
+        android:pathData="M12,12 h60 a3,3 0 0 1 3,3 v14 a3,3 0 0 1 -3,3 h-60 a3,3 0 0 1 -3,-3 v-14 a3,3 0 0 1 3,-3 z" />
+    <!-- Battery Tip (Positive Terminal) -->
+    <path
+        android:fillColor="#20B978"
+        android:pathData="M82,17 h4 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-4 z" />
+    <!-- Battery Charge Bars (78% filled green) -->
+    <path
+        android:fillColor="#80E8C4"
+        android:pathData="M13,14 h12 a2,2 0 0 1 2,2 v18 a2,2 0 0 1 -2,2 h-12 a2,2 0 0 1 -2,-2 v-18 a2,2 0 0 1 2,-2 z" />
+    <path
+        android:fillColor="#80E8C4"
+        android:pathData="M29,14 h12 a2,2 0 0 1 2,2 v18 a2,2 0 0 1 -2,2 h-12 a2,2 0 0 1 -2,-2 v-18 a2,2 0 0 1 2,-2 z" />
+    <path
+        android:fillColor="#80E8C4"
+        android:pathData="M45,14 h12 a2,2 0 0 1 2,2 v18 a2,2 0 0 1 -2,2 h-12 a2,2 0 0 1 -2,-2 v-18 a2,2 0 0 1 2,-2 z" />
+</vector>
