@@ -4,6 +4,14 @@
     <color name="sp_navy">#073B67</color>
     <color name="sp_teal">#009F91</color>
     <color name="sp_green">#20B978</color>
+    <color name="sp_green_bg">#E6F7ED</color>
     <color name="sp_muted">#6B7F8D</color>
     <color name="sp_hint">#9AAAB4</color>
+    <color name="sp_card_bg">#FFFFFF</color>
+    <color name="sp_card_stroke">#E2ECF3</color>
+    <color name="sp_blue_water">#0288D1</color>
+    <color name="sp_orange_temp">#FF6B00</color>
+    <color name="sp_nav_unselected">#8A99AD</color>
+    <color name="sp_banner_bg">#D7EEFA</color>
+    <color name="sp_progress_bg">#E8EFF4</color>
 </resources>

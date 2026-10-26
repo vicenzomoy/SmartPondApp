@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_beranda"
+        android:icon="@drawable/ic_nav_home"
+        android:title="@string/nav_beranda" />
+    <item
+        android:id="@+id/nav_sensor"
+        android:icon="@drawable/ic_nav_sensor"
+        android:title="@string/nav_sensor" />
+    <item
+        android:id="@+id/nav_kontrol"
+        android:icon="@drawable/ic_nav_control"
+        android:title="@string/nav_kontrol" />
+    <item
+        android:id="@+id/nav_energi"
+        android:icon="@drawable/ic_nav_energy"
+        android:title="@string/nav_energi" />
+    <item
+        android:id="@+id/nav_pengaturan"
+        android:icon="@drawable/ic_nav_settings"
+        android:title="@string/nav_pengaturan" />
+</menu>

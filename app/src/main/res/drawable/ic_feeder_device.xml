@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="130dp"
+    android:viewportWidth="120"
+    android:viewportHeight="130">
+    <!-- Feeder Hopper / Bucket (Grey Cylinder) -->
+    <path
+        android:fillColor="#90A4AE"
+        android:pathData="M30,20 L90,20 L80,75 L40,75 Z" />
+    <!-- Feeder Top Rim -->
+    <path
+        android:fillColor="#CFD8DC"
+        android:pathData="M25,12 L95,12 L90,20 L30,20 Z" />
+    <!-- Feeder Inner Funnel -->
+    <path
+        android:fillColor="#78909C"
+        android:pathData="M40,75 L80,75 L70,90 L50,90 Z" />
+    <!-- Dispenser Plate (Circular Disc) -->
+    <path
+        android:fillColor="#B0BEC5"
+        android:pathData="M20,90 L100,90 L95,98 L25,98 Z" />
+    <!-- Motor Base & Dispenser Wheel (Orange/Brown) -->
+    <path
+        android:fillColor="#FF9800"
+        android:pathData="M45,98 L75,98 L70,108 L50,108 Z" />
+    <!-- Stand / Tube -->
+    <path
+        android:fillColor="#37474F"
+        android:pathData="M55,108 L65,108 L65,125 L55,125 Z" />
+</vector>

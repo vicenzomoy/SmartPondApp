@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="24dp"
+    android:viewportWidth="48"
+    android:viewportHeight="24">
+    <!-- Body -->
+    <path
+        android:fillColor="#ECEFF1"
+        android:pathData="M36,12 C30,4 14,4 8,12 C14,20 30,20 36,12 Z" />
+    <!-- Dark spots -->
+    <path
+        android:fillColor="#546E7A"
+        android:pathData="M22,7 C26,7 28,17 24,17 C20,17 19,7 22,7 Z" />
+    <!-- Tail fin -->
+    <path
+        android:fillColor="#CFD8DC"
+        android:pathData="M36,12 L46,4 L42,12 L46,20 Z" />
+    <!-- Eye -->
+    <path
+        android:fillColor="#222222"
+        android:pathData="M11,10 A1.5,1.5 0 1,0 11,13 A1.5,1.5 0 1,0 11,10 Z" />
+</vector>
