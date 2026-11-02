@@ -30,6 +30,7 @@ import java.util.Locale
 class KontrolActivity : AppCompatActivity() {
 
     private lateinit var btnBack: ImageButton
+    private lateinit var btnNotification: ImageButton
     private lateinit var btnFeedNow: LinearLayout
     private lateinit var btnStop: LinearLayout
     private lateinit var tvFeederStatusText: TextView
@@ -68,6 +69,7 @@ class KontrolActivity : AppCompatActivity() {
 
     private fun initViews() {
         btnBack = findViewById(R.id.btnBack)
+        btnNotification = findViewById(R.id.btnNotification)
         btnFeedNow = findViewById(R.id.btnFeedNow)
         btnStop = findViewById(R.id.btnStop)
         tvFeederStatusText = findViewById(R.id.tvFeederStatusText)
@@ -94,6 +96,10 @@ class KontrolActivity : AppCompatActivity() {
             startActivity(Intent(this, MainActivity::class.java))
             overridePendingTransition(0, 0)
             finish()
+        }
+
+        btnNotification.setOnClickListener {
+            startActivity(Intent(this, NotifikasiActivity::class.java))
         }
 
         btnFeedNow.setOnClickListener {

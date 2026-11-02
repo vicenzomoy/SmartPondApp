@@ -21,6 +21,7 @@ import java.util.Locale
 class SensorActivity : AppCompatActivity() {
 
     private lateinit var btnBack: ImageButton
+    private lateinit var btnNotification: ImageButton
     private lateinit var tabSuhu: TextView
     private lateinit var tabKekeruhan: TextView
     private lateinit var tabLevelAir: TextView
@@ -81,6 +82,7 @@ class SensorActivity : AppCompatActivity() {
 
     private fun initViews() {
         btnBack = findViewById(R.id.btnBack)
+        btnNotification = findViewById(R.id.btnNotification)
         tabSuhu = findViewById(R.id.tabSuhu)
         tabKekeruhan = findViewById(R.id.tabKekeruhan)
         tabLevelAir = findViewById(R.id.tabLevelAir)
@@ -118,6 +120,10 @@ class SensorActivity : AppCompatActivity() {
     private fun setupListeners() {
         btnBack.setOnClickListener {
             finish()
+        }
+
+        btnNotification.setOnClickListener {
+            startActivity(Intent(this, NotifikasiActivity::class.java))
         }
 
         tabSuhu.setOnClickListener { selectTab("suhu") }

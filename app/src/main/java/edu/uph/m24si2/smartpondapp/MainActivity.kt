@@ -3,6 +3,7 @@ package edu.uph.m24si2.smartpondapp
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -19,6 +20,8 @@ import java.sql.Ref
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var btnMenu: ImageButton
+    private lateinit var btnNotification: ImageButton
     private lateinit var tvSystemStatus: TextView
     private lateinit var tvSystemConnection: TextView
 
@@ -52,11 +55,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         initViews()
+        setupMenuNavigation()
         setupBottomNavigation()
         listenRealtimeDatabase()
     }
 
     private fun initViews() {
+        btnMenu = findViewById(R.id.btnMenu)
+        btnNotification = findViewById(R.id.btnNotification)
         tvSystemStatus = findViewById(R.id.tvSystemStatus)
         tvSystemConnection = findViewById(R.id.tvSystemConnection)
 
@@ -75,6 +81,16 @@ class MainActivity : AppCompatActivity() {
         pbBaterai = findViewById(R.id.pbBaterai)
 
         bottomNavigation = findViewById(R.id.bottomNavigation)
+    }
+
+    private fun setupMenuNavigation() {
+        btnMenu.setOnClickListener {
+            startActivity(Intent(this, RiwayatDataActivity::class.java))
+        }
+
+        btnNotification.setOnClickListener {
+            startActivity(Intent(this, NotifikasiActivity::class.java))
+        }
     }
 
     private fun setupBottomNavigation() {

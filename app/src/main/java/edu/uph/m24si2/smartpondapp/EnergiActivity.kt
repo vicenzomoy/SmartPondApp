@@ -19,6 +19,7 @@ import com.google.firebase.database.ValueEventListener
 class EnergiActivity : AppCompatActivity() {
 
     private lateinit var btnBack: ImageButton
+    private lateinit var btnNotification: ImageButton
     private lateinit var tvBateraiPercentMain: TextView
     private lateinit var tvBateraiVoltMain: TextView
     private lateinit var tvBateraiStatusBadge: TextView
@@ -60,6 +61,7 @@ class EnergiActivity : AppCompatActivity() {
 
     private fun initViews() {
         btnBack = findViewById(R.id.btnBack)
+        btnNotification = findViewById(R.id.btnNotification)
         tvBateraiPercentMain = findViewById(R.id.tvBateraiPercentMain)
         tvBateraiVoltMain = findViewById(R.id.tvBateraiVoltMain)
         tvBateraiStatusBadge = findViewById(R.id.tvBateraiStatusBadge)
@@ -85,6 +87,10 @@ class EnergiActivity : AppCompatActivity() {
             startActivity(Intent(this, MainActivity::class.java))
             overridePendingTransition(0, 0)
             finish()
+        }
+
+        btnNotification.setOnClickListener {
+            startActivity(Intent(this, NotifikasiActivity::class.java))
         }
 
         btnFilterDayaMasuk.setOnClickListener { updateFilterTabs(0) }

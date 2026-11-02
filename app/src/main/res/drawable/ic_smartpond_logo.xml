@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="180dp"
+    android:height="180dp"
+    android:viewportWidth="180"
+    android:viewportHeight="180">
+    <!-- Outer Circular Ring Frame (Navy Blue) -->
+    <path
+        android:fillColor="#073B67"
+        android:pathData="M90,10 A80,80 0 1,0 170,90 A80,80 0 0,0 90,10 Z M90,165 A75,75 0 1,1 165,90 A75,75 0 0,1 90,165 Z" />
+
+    <!-- Wind Turbine Poles & Blades -->
+    <path
+        android:fillColor="#073B67"
+        android:pathData="M88,40 L92,40 L91,85 L89,85 Z" />
+    <path
+        android:fillColor="#073B67"
+        android:pathData="M90,40 C80,20 60,18 60,30 C60,40 80,40 90,40 Z" />
+    <path
+        android:fillColor="#073B67"
+        android:pathData="M90,40 C110,30 120,45 110,55 C100,60 90,50 90,40 Z" />
+    <path
+        android:fillColor="#073B67"
+        android:pathData="M90,40 C75,55 70,70 82,72 C90,72 90,55 90,40 Z" />
+
+    <!-- Wifi Waves (Right Side) -->
+    <path
+        android:fillColor="#00A8E8"
+        android:pathData="M115,55 A15,15 0 0,1 135,55"
+        android:strokeWidth="3"
+        android:strokeColor="#00A8E8" />
+    <path
+        android:fillColor="#00A8E8"
+        android:pathData="M120,62 A8,8 0 0,1 130,62"
+        android:strokeWidth="3"
+        android:strokeColor="#00A8E8" />
+
+    <!-- Center Pond Container Box -->
+    <path
+        android:fillColor="#073B67"
+        android:pathData="M50,85 h80 a8,8 0 0 1 8,8 v35 a12,12 0 0 1 -12,12 h-64 a12,12 0 0 1 -12,-12 v-35 a8,8 0 0 1 8,-8 z" />
+    <!-- Water Area Inside Container -->
+    <path
+        android:fillColor="#00A8E8"
+        android:pathData="M54,92 h72 a4,4 0 0 1 4,4 v24 a8,8 0 0 1 -8,8 h-60 a8,8 0 0 1 -8,-8 v-24 a4,4 0 0 1 4,-4 z" />
+
+    <!-- Swimming Fish Left (White/Orange) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M65,108 C70,104 78,104 82,108 C78,112 70,112 65,108 Z" />
+    <path
+        android:fillColor="#FF6B00"
+        android:pathData="M98,114 C103,110 111,110 115,114 C111,118 103,118 98,114 Z" />
+
+    <!-- Aquatic Plants Left and Right (Green) -->
+    <path
+        android:fillColor="#20B978"
+        android:pathData="M35,110 C32,80 48,70 48,110 Z" />
+    <path
+        android:fillColor="#20B978"
+        android:pathData="M145,110 C148,80 132,70 132,110 Z" />
+</vector>

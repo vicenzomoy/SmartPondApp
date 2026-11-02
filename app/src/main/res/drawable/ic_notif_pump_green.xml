@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+    <!-- Green Circle Background -->
+    <path
+        android:fillColor="#20B978"
+        android:pathData="M18,18m-18,0a18,18 0 1,0 36,0a18,18 0 1,0 -36,0" />
+    <!-- White Power / Pump Icon -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M17,10h2v7h-2zM21.5,13.5a5.5,5.5 0,1 1,-7,0v2.2a3.5,3.5 0,1 0,7,0z" />
+</vector>
