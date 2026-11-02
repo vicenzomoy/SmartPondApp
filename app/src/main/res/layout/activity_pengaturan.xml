@@ -53,11 +53,14 @@
             <!-- Logo -->
             <ImageView
                 android:id="@+id/ivSmartPondLogo"
-                android:layout_width="160dp"
-                android:layout_height="160dp"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
                 android:layout_marginTop="8dp"
+                android:background="@drawable/bg_circle"
+                android:clipToOutline="true"
                 android:contentDescription="SmartPond Logo"
-                android:src="@drawable/ic_smartpond_logo" />
+                android:scaleType="centerCrop"
+                android:src="@drawable/logo_smartpond" />
 
             <!-- App Title -->
             <TextView
