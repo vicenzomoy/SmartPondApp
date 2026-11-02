@@ -9,31 +9,29 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.switchmaterial.SwitchMaterial
 
 class JadwalAdapter(
-    private var jadwalList: MutableList<JadwalPakan>,
+    private val jadwalList: MutableList<JadwalPakan>,
     private val onToggleChanged: (JadwalPakan, Boolean) -> Unit,
     private val onMenuClicked: (JadwalPakan, View) -> Unit
-) : RecyclerView.Adapter<JadwalAdapter.JadwalViewHolder>() {
+) : RecyclerView.Adapter<JadwalAdapter.ViewHolder>() {
 
-    class JadwalViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tvTime: TextView = itemView.findViewById(R.id.tvJadwalTime)
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val tvTime: TextView = itemView.findViewById(R.id.tvTime)
         val switchJadwal: SwitchMaterial = itemView.findViewById(R.id.switchJadwal)
-        val tvLabel: TextView = itemView.findViewById(R.id.tvJadwalLabel)
-        val btnMenu: ImageButton = itemView.findViewById(R.id.btnJadwalMenu)
+        val tvLabel: TextView = itemView.findViewById(R.id.tvLabel)
+        val btnMore: ImageButton = itemView.findViewById(R.id.btnMore)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): JadwalViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_jadwal_pakan, parent, false)
-        return JadwalViewHolder(view)
+        return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: JadwalViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = jadwalList[position]
-
         holder.tvTime.text = item.time
-        holder.tvLabel.text = item.fullLabel
+        holder.tvLabel.text = "${item.label} (${item.portion})"
 
-        // Prevent unwanted listener triggering during bind
         holder.switchJadwal.setOnCheckedChangeListener(null)
         holder.switchJadwal.isChecked = item.enabled
 
@@ -42,16 +40,10 @@ class JadwalAdapter(
             onToggleChanged(item, isChecked)
         }
 
-        holder.btnMenu.setOnClickListener { v ->
-            onMenuClicked(item, v)
+        holder.btnMore.setOnClickListener { view ->
+            onMenuClicked(item, view)
         }
     }
 
     override fun getItemCount(): Int = jadwalList.size
-
-    fun updateData(newList: List<JadwalPakan>) {
-        jadwalList.clear()
-        jadwalList.addAll(newList)
-        notifyDataSetChanged()
-    }
 }

@@ -42,7 +42,7 @@ class RiwayatDataActivity : AppCompatActivity() {
     private val riwayatList = mutableListOf<RiwayatData>()
 
     private val selectedCalendar: Calendar = Calendar.getInstance()
-    private var selectedTabIndex = 0 // 0: Suhu, 1: Kekeruhan, 2: Level Air, 3: Energi
+    private var selectedTabIndex = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +51,7 @@ class RiwayatDataActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainRiwayatData)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
@@ -88,8 +88,6 @@ class RiwayatDataActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         btnBack.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
-            overridePendingTransition(0, 0)
             finish()
         }
 
@@ -145,7 +143,7 @@ class RiwayatDataActivity : AppCompatActivity() {
         val detailDataList = mutableListOf<RiwayatData>()
 
         when (selectedTabIndex) {
-            0 -> { // Suhu
+            0 -> {
                 colorHex = "#FF5252"
                 chartPoints = listOf(25.0f, 24.3f, 24.0f, 24.2f, 23.8f, 24.1f, 24.9f, 25.8f, 26.2f, 25.9f, 26.8f, 27.5f, 28.6f, 27.2f, 26.1f, 25.7f, 26.3f, 25.5f, 24.9f, 25.4f, 25.9f, 26.1f, 25.8f)
                 detailDataList.addAll(listOf(
@@ -167,7 +165,7 @@ class RiwayatDataActivity : AppCompatActivity() {
                     RiwayatData("15:00", "27.1 °C")
                 ))
             }
-            1 -> { // Kekeruhan
+            1 -> {
                 colorHex = "#00A8E8"
                 chartPoints = listOf(12.0f, 12.2f, 11.9f, 12.1f, 12.5f, 12.3f, 12.0f, 11.8f, 12.4f, 12.6f, 12.1f, 11.9f, 12.0f)
                 detailDataList.addAll(listOf(
@@ -181,7 +179,7 @@ class RiwayatDataActivity : AppCompatActivity() {
                     RiwayatData("07:00", "11.8 NTU")
                 ))
             }
-            2 -> { // Level Air
+            2 -> {
                 colorHex = "#0288D1"
                 chartPoints = listOf(95f, 95f, 94f, 95f, 96f, 95f, 95f, 94f, 95f, 95f)
                 detailDataList.addAll(listOf(
@@ -193,7 +191,7 @@ class RiwayatDataActivity : AppCompatActivity() {
                     RiwayatData("05:00", "Normal (95%)")
                 ))
             }
-            else -> { // Energi
+            else -> {
                 colorHex = "#20B978"
                 chartPoints = listOf(3.6f, 2.1f, 2.3f, 4.2f, 2.8f, 2.0f, 2.2f, 4.9f, 6.5f, 4.0f, 6.4f, 3.8f, 5.0f, 2.8f, 3.8f)
                 detailDataList.addAll(listOf(
@@ -212,58 +210,63 @@ class RiwayatDataActivity : AppCompatActivity() {
     }
 
     private fun listenRealtimeDatabase() {
-        val database = FirebaseDatabase.getInstance()
-        val ref = database.reference.child("smartpond").child("riwayat")
+        try {
+            val database = FirebaseDatabase.getInstance("https://smartpondapp-default-rtdb.asia-southeast1.firebasedatabase.app/")
+            val ref = database.getReference("SmartPond").child("riwayat")
 
-        ref.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (!snapshot.exists()) return
-                // Check if firebase has real historical records for selected tab
-                val sensorKey = when (selectedTabIndex) {
-                    0 -> "suhu"
-                    1 -> "kekeruhan"
-                    2 -> "level_air"
-                    else -> "energi"
-                }
+            ref.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!snapshot.exists()) return
 
-                if (snapshot.hasChild(sensorKey)) {
-                    val sensorSnapshot = snapshot.child(sensorKey)
-                    val newList = mutableListOf<RiwayatData>()
-                    val points = mutableListOf<Float>()
-
-                    for (child in sensorSnapshot.children) {
-                        val time = child.key ?: continue
-                        val valueStr = child.value?.toString() ?: continue
-                        newList.add(RiwayatData(time, valueStr))
-
-                        val floatVal = valueStr.replace(Regex("[^0-9.]"), "").toFloatOrNull()
-                        if (floatVal != null) {
-                            points.add(floatVal)
-                        }
+                    val sensorKey = when (selectedTabIndex) {
+                        0 -> "suhu"
+                        1 -> "kekeruhan"
+                        2 -> "level_air"
+                        else -> "energi"
                     }
 
-                    if (newList.isNotEmpty()) {
-                        adapter.updateData(newList)
-                        if (points.size >= 2) {
-                            val colorHex = when (selectedTabIndex) {
-                                0 -> "#FF5252"
-                                1 -> "#00A8E8"
-                                2 -> "#0288D1"
-                                else -> "#20B978"
+                    if (snapshot.hasChild(sensorKey)) {
+                        val sensorSnapshot = snapshot.child(sensorKey)
+                        val newList = mutableListOf<RiwayatData>()
+                        val points = mutableListOf<Float>()
+
+                        for (child in sensorSnapshot.children) {
+                            val time = child.key ?: continue
+                            val valueStr = child.value?.toString() ?: continue
+                            newList.add(RiwayatData(time, valueStr))
+
+                            val floatVal = valueStr.replace(Regex("[^0-9.]"), "").toFloatOrNull()
+                            if (floatVal != null) {
+                                points.add(floatVal)
                             }
-                            historyChartView.setChartData(points, colorHex)
+                        }
+
+                        if (newList.isNotEmpty()) {
+                            adapter.updateData(newList)
+                            if (points.size >= 2) {
+                                val colorHex = when (selectedTabIndex) {
+                                    0 -> "#FF5252"
+                                    1 -> "#00A8E8"
+                                    2 -> "#0288D1"
+                                    else -> "#20B978"
+                                }
+                                historyChartView.setChartData(points, colorHex)
+                            }
                         }
                     }
                 }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("RiwayatDataActivity", "Database error: ${error.message}")
-            }
-        })
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("RiwayatDataActivity", "Database error: ${error.message}")
+                }
+            })
+        } catch (e: Exception) {
+            Log.e("RiwayatDataActivity", "Firebase init error: ${e.message}")
+        }
     }
 
     private fun setupBottomNavigation() {
+        bottomNavigation.setOnItemSelectedListener(null)
         bottomNavigation.selectedItemId = R.id.nav_beranda
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {

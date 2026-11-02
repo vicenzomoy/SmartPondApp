@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -24,7 +23,6 @@ import com.google.firebase.database.ValueEventListener
 
 class PengaturanActivity : AppCompatActivity() {
 
-    private lateinit var btnBack: ImageButton
     private lateinit var tvAppVersion: TextView
     private lateinit var tvAppDescription: TextView
     private lateinit var tvDeveloperInfo: TextView
@@ -43,7 +41,7 @@ class PengaturanActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainPengaturan)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
@@ -56,7 +54,6 @@ class PengaturanActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        btnBack = findViewById(R.id.btnBack)
         tvAppVersion = findViewById(R.id.tvAppVersion)
         tvAppDescription = findViewById(R.id.tvAppDescription)
         tvDeveloperInfo = findViewById(R.id.tvDeveloperInfo)
@@ -68,12 +65,6 @@ class PengaturanActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        btnBack.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-
         btnChangePassword.setOnClickListener {
             showChangePasswordDialog()
         }
@@ -154,47 +145,45 @@ class PengaturanActivity : AppCompatActivity() {
     }
 
     private fun listenRealtimeDatabase() {
-        val database = FirebaseDatabase.getInstance()
-        val ref = database.reference
+        try {
+            val database = FirebaseDatabase.getInstance("https://smartpondapp-default-rtdb.asia-southeast1.firebasedatabase.app/")
+            val ref = database.getReference("SmartPond")
 
-        ref.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (!snapshot.exists()) return
+            ref.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!snapshot.exists()) return
 
-                val dataNode = if (snapshot.hasChild("smartpond")) {
-                    snapshot.child("smartpond")
-                } else {
-                    snapshot
-                }
+                    val appInfoNode = snapshot.child("app_info").takeIf { it.exists() }
+                        ?: snapshot.child("info")
 
-                val appInfoNode = dataNode.child("app_info")
-                    .takeIf { it.exists() }
-                    ?: dataNode.child("info")
+                    if (appInfoNode.exists()) {
+                        val version = appInfoNode.child("version").value?.toString()
+                        val description = appInfoNode.child("description").value?.toString()
+                        val developer = appInfoNode.child("developer").value?.toString()
 
-                if (appInfoNode != null && appInfoNode.exists()) {
-                    val version = appInfoNode.child("version").value?.toString()
-                    val description = appInfoNode.child("description").value?.toString()
-                    val developer = appInfoNode.child("developer").value?.toString()
-
-                    if (!version.isNullOrEmpty()) {
-                        tvAppVersion.text = if (version.lowercase().startsWith("v")) version else "Versi $version"
-                    }
-                    if (!description.isNullOrEmpty()) {
-                        tvAppDescription.text = description
-                    }
-                    if (!developer.isNullOrEmpty()) {
-                        tvDeveloperInfo.text = developer
+                        if (!version.isNullOrEmpty()) {
+                            tvAppVersion.text = if (version.lowercase().startsWith("v")) version else "Versi $version"
+                        }
+                        if (!description.isNullOrEmpty()) {
+                            tvAppDescription.text = description
+                        }
+                        if (!developer.isNullOrEmpty()) {
+                            tvDeveloperInfo.text = developer
+                        }
                     }
                 }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("PengaturanActivity", "Database error: ${error.message}")
-            }
-        })
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("PengaturanActivity", "Database error: ${error.message}")
+                }
+            })
+        } catch (e: Exception) {
+            Log.e("PengaturanActivity", "Firebase init error: ${e.message}")
+        }
     }
 
     private fun setupBottomNavigation() {
+        bottomNavigation.setOnItemSelectedListener(null)
         bottomNavigation.selectedItemId = R.id.nav_pengaturan
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {

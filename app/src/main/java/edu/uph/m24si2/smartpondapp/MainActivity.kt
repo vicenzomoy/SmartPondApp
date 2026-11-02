@@ -16,7 +16,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import java.sql.Ref
 
 class MainActivity : AppCompatActivity() {
 
@@ -50,7 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
@@ -94,6 +93,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation() {
+        bottomNavigation.setOnItemSelectedListener(null)
         bottomNavigation.selectedItemId = R.id.nav_beranda
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -128,74 +128,78 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun listenRealtimeDatabase() {
-        ref = FirebaseDatabase
-            .getInstance("https://smartpondapp-default-rtdb.asia-southeast1.firebasedatabase.app/")
-            .getReference("SmartPond")
-            .child("sensor")
+        try {
+            ref = FirebaseDatabase
+                .getInstance("https://smartpondapp-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("SmartPond")
 
-        ref.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                // 1. Suhu Air
-                val suhu = snapshot
-                    .child("suhu")
-                    .getValue(Double::class.java)
-                val suhuStr = suhu.toString()
-                    tvSuhuValue.text = if (suhuStr.contains("°C")) suhuStr else "$suhuStr°C"
+            ref.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!snapshot.exists()) return
 
-                // 2. Kekeruhan
-//                val kekeruhan = snapshot
-//                    .child("kekeruhan")
-//                    .getValue(Double::class.java)
-//                val kekeruhanStr =kekeruhan.toString()
-//                    tvKekeruhanValue.text = if (kekeruhanStr.contains("NTU")) kekeruhanStr else "$kekeruhanStr NTU"
+                    val sensorNode = if (snapshot.hasChild("sensor")) snapshot.child("sensor") else snapshot
 
-//                val kekeruhanStatus = dataNode.child("kekeruhan_status").value
-//                    ?: dataNode.child("turbidity_status").value
-//                if (kekeruhanStatus != null) {
-//                    tvKekeruhanStatusText.text = kekeruhanStatus.toString()
-//                }
+                    // 1. Suhu Air
+                    val suhu = sensorNode.child("suhu").value
+                        ?: sensorNode.child("suhu_air").value
+                    if (suhu != null) {
+                        val suhuStr = suhu.toString()
+                        tvSuhuValue.text = if (suhuStr.contains("°C")) suhuStr else "$suhuStr°C"
+                    }
 
-                // 3. Level Air
-                val levelAir = snapshot
-                    .child("status_air")
-                    .getValue(String::class.java)
-                if (levelAir != null) {
-                    tvLevelAirValue.text = levelAir.replaceFirstChar { it.uppercaseChar() }
+                    // 2. Kekeruhan
+                    val kekeruhan = sensorNode.child("kekeruhan").value
+                    if (kekeruhan != null) {
+                        val kekeruhanStr = kekeruhan.toString()
+                        tvKekeruhanValue.text = if (kekeruhanStr.contains("NTU")) kekeruhanStr else "$kekeruhanStr NTU"
+                    }
+
+                    val kekeruhanStatus = sensorNode.child("kekeruhan_status").value
+                    if (kekeruhanStatus != null) {
+                        tvKekeruhanStatusText.text = kekeruhanStatus.toString()
+                    }
+
+                    // 3. Level Air
+                    val levelAir = sensorNode.child("status_air").value
+                        ?: sensorNode.child("level_air").value
+                    if (levelAir != null) {
+                        val levelStr = levelAir.toString()
+                        tvLevelAirValue.text = levelStr.replaceFirstChar { it.uppercaseChar() }
+                    }
+
+                    // 4. Baterai
+                    val batVolt = snapshot.child("baterai_volt").value
+                        ?: snapshot.child("baterai").child("volt").value
+                    if (batVolt != null) {
+                        val batVoltStr = batVolt.toString()
+                        tvBateraiVolt.text = if (batVoltStr.lowercase().contains("v")) batVoltStr else "$batVoltStr v"
+                    }
+
+                    val batPercent = snapshot.child("baterai_persen").value
+                        ?: snapshot.child("baterai").child("persen").value
+                    if (batPercent != null) {
+                        val percentInt = batPercent.toString().replace("%", "").trim().toIntOrNull()
+                        if (percentInt != null) {
+                            tvBateraiPercent.text = "$percentInt%"
+                            pbBaterai.progress = percentInt.coerceIn(0, 100)
+                        } else {
+                            tvBateraiPercent.text = batPercent.toString()
+                        }
+                    }
+
+                    // System status
+                    val statusSys = snapshot.child("status_sistem").value
+                    if (statusSys != null) {
+                        tvSystemStatus.text = statusSys.toString()
+                    }
                 }
 
-                // 4. Baterai
-//                val batVolt = dataNode.child("baterai_volt").value
-//                    ?: dataNode.child("voltage").value
-//                    ?: dataNode.child("baterai").value
-//                if (batVolt != null) {
-//                    val batVoltStr = batVolt.toString()
-//                    tvBateraiVolt.text = if (batVoltStr.lowercase().contains("v")) batVoltStr else "$batVoltStr v"
-//                }
-//
-//                val batPercent = dataNode.child("baterai_persen").value
-//                    ?: dataNode.child("battery_percent").value
-//                    ?: dataNode.child("battery").value
-//                if (batPercent != null) {
-//                    val percentInt = batPercent.toString().replace("%", "").toIntOrNull()
-//                    if (percentInt != null) {
-//                        tvBateraiPercent.text = "$percentInt%"
-//                        pbBaterai.progress = percentInt
-//                    } else {
-//                        tvBateraiPercent.text = batPercent.toString()
-//                    }
-//                }
-
-                // System status
-//                val statusSys = dataNode.child("status_sistem").value
-//                    ?: dataNode.child("system_status").value
-//                if (statusSys != null) {
-//                    tvSystemStatus.text = statusSys.toString()
-//                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("MainActivity", "Database error: ${error.message}")
-            }
-        })
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("MainActivity", "Database error: ${error.message}")
+                }
+            })
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Firebase init error: ${e.message}")
+        }
     }
 }

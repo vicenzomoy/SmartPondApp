@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="20dp">
 
     <TextView
         android:id="@+id/tvDialogTitle"
@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Waktu Pakan"
+        android:text="Pilih Waktu (Jam:Menit):"
         android:textColor="@color/sp_muted"
         android:textSize="12sp" />
 
@@ -26,20 +26,19 @@
         android:id="@+id/tvSelectTime"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_marginTop="4dp"
-        android:background="@drawable/bg_input"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/bg_card_rounded"
+        android:gravity="center"
         android:text="08:00"
         android:textColor="@color/sp_navy"
-        android:textSize="18sp"
+        android:textSize="22sp"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="Nama Jadwal (e.g. Pagi, Sore, Malam)"
+        android:layout_marginTop="16dp"
+        android:text="Keterangan (misal: Pagi / Sore):"
         android:textColor="@color/sp_muted"
         android:textSize="12sp" />
 
@@ -47,21 +46,18 @@
         android:id="@+id/etJadwalLabel"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_marginTop="4dp"
-        android:background="@drawable/bg_input"
-        android:hint="Pagi"
-        android:importantForAutofill="no"
-        android:inputType="textCapWords"
-        android:paddingHorizontal="16dp"
-        android:textColor="@color/sp_navy"
-        android:textColorHint="@color/sp_hint"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/bg_card_rounded"
+        android:hint="Contoh: Pagi"
+        android:inputType="text"
+        android:paddingHorizontal="14dp"
         android:textSize="14sp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="Porsi Pakan"
+        android:layout_marginTop="16dp"
+        android:text="Porsi (misal: Porsi 1x):"
         android:textColor="@color/sp_muted"
         android:textSize="12sp" />
 
@@ -69,14 +65,11 @@
         android:id="@+id/etJadwalPortion"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_marginTop="4dp"
-        android:background="@drawable/bg_input"
-        android:hint="Porsi 1x"
-        android:importantForAutofill="no"
-        android:inputType="textCapWords"
-        android:paddingHorizontal="16dp"
-        android:textColor="@color/sp_navy"
-        android:textColorHint="@color/sp_hint"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/bg_card_rounded"
+        android:hint="Contoh: Porsi 1x"
+        android:inputType="text"
+        android:paddingHorizontal="14dp"
         android:textSize="14sp" />
 
 </LinearLayout>

@@ -18,7 +18,6 @@ import com.google.firebase.database.ValueEventListener
 
 class EnergiActivity : AppCompatActivity() {
 
-    private lateinit var btnBack: ImageButton
     private lateinit var btnNotification: ImageButton
     private lateinit var tvBateraiPercentMain: TextView
     private lateinit var tvBateraiVoltMain: TextView
@@ -39,7 +38,7 @@ class EnergiActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigation: BottomNavigationView
 
-    private var selectedFilterIndex = 0 // 0: Daya Masuk, 1: Tegangan, 2: Energi Harian
+    private var selectedFilterIndex = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,7 +47,7 @@ class EnergiActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainEnergi)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
@@ -60,7 +59,6 @@ class EnergiActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        btnBack = findViewById(R.id.btnBack)
         btnNotification = findViewById(R.id.btnNotification)
         tvBateraiPercentMain = findViewById(R.id.tvBateraiPercentMain)
         tvBateraiVoltMain = findViewById(R.id.tvBateraiVoltMain)
@@ -83,12 +81,6 @@ class EnergiActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        btnBack.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-
         btnNotification.setOnClickListener {
             startActivity(Intent(this, NotifikasiActivity::class.java))
         }
@@ -139,87 +131,78 @@ class EnergiActivity : AppCompatActivity() {
     }
 
     private fun listenRealtimeDatabase() {
-        val database = FirebaseDatabase.getInstance()
-        val ref = database.reference
+        try {
+            val database = FirebaseDatabase.getInstance("https://smartpondapp-default-rtdb.asia-southeast1.firebasedatabase.app/")
+            val ref = database.getReference("SmartPond")
 
-        ref.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (!snapshot.exists()) return
+            ref.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!snapshot.exists()) return
 
-                val dataNode = if (snapshot.hasChild("smartpond")) {
-                    snapshot.child("smartpond")
-                } else if (snapshot.hasChild("pond")) {
-                    snapshot.child("pond")
-                } else {
-                    snapshot
+                    // 1. Battery percent
+                    val batPercent = snapshot.child("baterai_persen").value
+                        ?: snapshot.child("baterai").child("persen").value
+                    if (batPercent != null) {
+                        val percentStr = batPercent.toString()
+                        tvBateraiPercentMain.text = if (percentStr.endsWith("%")) percentStr else "$percentStr%"
+                    }
+
+                    // 2. Battery voltage
+                    val batVolt = snapshot.child("baterai_volt").value
+                        ?: snapshot.child("baterai").child("volt").value
+                    if (batVolt != null) {
+                        val voltStr = batVolt.toString()
+                        tvBateraiVoltMain.text = if (voltStr.lowercase().contains("v")) voltStr else "$voltStr V"
+                    }
+
+                    // 3. Battery status
+                    val batStatus = snapshot.child("baterai_status").value
+                    if (batStatus != null) {
+                        tvBateraiStatusBadge.text = batStatus.toString()
+                    }
+
+                    // 4. Daya turbin (power)
+                    val dayaTurbin = snapshot.child("daya_turbin").value
+                        ?: snapshot.child("energi").child("daya_turbin").value
+                    if (dayaTurbin != null) {
+                        val dayaStr = dayaTurbin.toString()
+                        tvDayaTurbinValue.text = if (dayaStr.lowercase().contains("w")) dayaStr else "$dayaStr W"
+                    }
+
+                    // 5. Energi hari ini
+                    val energiHariIni = snapshot.child("energi_hari_ini").value
+                        ?: snapshot.child("energi").child("hari_ini").value
+                    if (energiHariIni != null) {
+                        val energiStr = energiHariIni.toString()
+                        tvEnergiHariIniValue.text = if (energiStr.lowercase().contains("wh")) energiStr else "$energiStr Wh"
+                    }
+
+                    // 6. Rata-rata hari ini
+                    val rataRata = snapshot.child("rata_rata_daya").value
+                    if (rataRata != null) {
+                        val avgStr = rataRata.toString()
+                        tvRataRataValue.text = if (avgStr.lowercase().contains("w")) avgStr else "$avgStr W"
+                    }
+
+                    // 7. Total energi
+                    val totalEnergi = snapshot.child("total_energi").value
+                    if (totalEnergi != null) {
+                        val totalStr = totalEnergi.toString()
+                        tvTotalEnergiValue.text = if (totalStr.lowercase().contains("wh")) totalStr else "$totalStr Wh"
+                    }
                 }
 
-                // 1. Battery percent
-                val batPercent = dataNode.child("baterai_persen").value
-                    ?: dataNode.child("battery_percent").value
-                    ?: dataNode.child("battery").value
-                if (batPercent != null) {
-                    val percentStr = batPercent.toString()
-                    tvBateraiPercentMain.text = if (percentStr.endsWith("%")) percentStr else "$percentStr%"
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("EnergiActivity", "Database error: ${error.message}")
                 }
-
-                // 2. Battery voltage
-                val batVolt = dataNode.child("baterai_volt").value
-                    ?: dataNode.child("voltage").value
-                    ?: dataNode.child("baterai").value
-                if (batVolt != null) {
-                    val voltStr = batVolt.toString()
-                    tvBateraiVoltMain.text = if (voltStr.lowercase().contains("v")) voltStr else "$voltStr V"
-                }
-
-                // 3. Battery status
-                val batStatus = dataNode.child("baterai_status").value
-                    ?: dataNode.child("battery_status").value
-                if (batStatus != null) {
-                    tvBateraiStatusBadge.text = batStatus.toString()
-                }
-
-                // 4. Daya turbin (power)
-                val dayaTurbin = dataNode.child("daya_turbin").value
-                    ?: dataNode.child("daya").value
-                    ?: dataNode.child("power").value
-                if (dayaTurbin != null) {
-                    val dayaStr = dayaTurbin.toString()
-                    tvDayaTurbinValue.text = if (dayaStr.lowercase().contains("w")) dayaStr else "$dayaStr W"
-                }
-
-                // 5. Energi hari ini
-                val energiHariIni = dataNode.child("energi_hari_ini").value
-                    ?: dataNode.child("energy_today").value
-                if (energiHariIni != null) {
-                    val energiStr = energiHariIni.toString()
-                    tvEnergiHariIniValue.text = if (energiStr.lowercase().contains("wh")) energiStr else "$energiStr Wh"
-                }
-
-                // 6. Rata-rata hari ini
-                val rataRata = dataNode.child("rata_rata_daya").value
-                    ?: dataNode.child("avg_power").value
-                if (rataRata != null) {
-                    val avgStr = rataRata.toString()
-                    tvRataRataValue.text = if (avgStr.lowercase().contains("w")) avgStr else "$avgStr W"
-                }
-
-                // 7. Total energi
-                val totalEnergi = dataNode.child("total_energi").value
-                    ?: dataNode.child("total_energy").value
-                if (totalEnergi != null) {
-                    val totalStr = totalEnergi.toString()
-                    tvTotalEnergiValue.text = if (totalStr.lowercase().contains("wh")) totalStr else "$totalStr Wh"
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("EnergiActivity", "Database error: ${error.message}")
-            }
-        })
+            })
+        } catch (e: Exception) {
+            Log.e("EnergiActivity", "Firebase init error: ${e.message}")
+        }
     }
 
     private fun setupBottomNavigation() {
+        bottomNavigation.setOnItemSelectedListener(null)
         bottomNavigation.selectedItemId = R.id.nav_energi
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {

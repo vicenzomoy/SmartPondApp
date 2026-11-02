@@ -20,7 +20,6 @@ import java.util.Locale
 
 class SensorActivity : AppCompatActivity() {
 
-    private lateinit var btnBack: ImageButton
     private lateinit var btnNotification: ImageButton
     private lateinit var tabSuhu: TextView
     private lateinit var tabKekeruhan: TextView
@@ -55,10 +54,9 @@ class SensorActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigation: BottomNavigationView
 
-    private var activeTab: String = "suhu" // "suhu", "kekeruhan", "level_air"
-    private var activeTimeRange: String = "1d" // "6h", "1d", "1w", "1m"
+    private var activeTab: String = "suhu"
+    private var activeTimeRange: String = "1d"
 
-    // Stored live RTDB data
     private var liveSuhuHistory: List<Float> = listOf(25.2f, 24.3f, 24.0f, 25.5f, 26.8f, 28.5f, 26.0f, 25.2f, 25.8f, 26.2f, 25.9f)
     private var liveKekeruhanHistory: List<Float> = listOf(14f, 13f, 11f, 12f, 12f, 15f, 13f, 12f, 12f, 13f, 12f)
     private var liveLevelAirHistory: List<Float> = listOf(90f, 92f, 95f, 94f, 96f, 95f, 97f, 95f, 96f, 95f, 95f)
@@ -70,7 +68,7 @@ class SensorActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainSensor)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
@@ -81,7 +79,6 @@ class SensorActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        btnBack = findViewById(R.id.btnBack)
         btnNotification = findViewById(R.id.btnNotification)
         tabSuhu = findViewById(R.id.tabSuhu)
         tabKekeruhan = findViewById(R.id.tabKekeruhan)
@@ -118,10 +115,6 @@ class SensorActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        btnBack.setOnClickListener {
-            finish()
-        }
-
         btnNotification.setOnClickListener {
             startActivity(Intent(this, NotifikasiActivity::class.java))
         }
@@ -229,21 +222,9 @@ class SensorActivity : AppCompatActivity() {
 
     private fun updateChart() {
         val (history, labels, suffix) = when (activeTab) {
-            "kekeruhan" -> Triple(
-                liveKekeruhanHistory,
-                getTimeLabels(activeTimeRange),
-                "NTU"
-            )
-            "level_air" -> Triple(
-                liveLevelAirHistory,
-                getTimeLabels(activeTimeRange),
-                "%"
-            )
-            else -> Triple(
-                liveSuhuHistory,
-                getTimeLabels(activeTimeRange),
-                "°C"
-            )
+            "kekeruhan" -> Triple(liveKekeruhanHistory, getTimeLabels(activeTimeRange), "NTU")
+            "level_air" -> Triple(liveLevelAirHistory, getTimeLabels(activeTimeRange), "%")
+            else -> Triple(liveSuhuHistory, getTimeLabels(activeTimeRange), "°C")
         }
 
         val filteredPoints = filterPointsByTimeRange(history, activeTimeRange)
@@ -270,113 +251,105 @@ class SensorActivity : AppCompatActivity() {
     }
 
     private fun listenRealtimeDatabase() {
-        val database = FirebaseDatabase.getInstance()
-        val ref = database.reference
+        try {
+            val database = FirebaseDatabase.getInstance("https://smartpondapp-default-rtdb.asia-southeast1.firebasedatabase.app/")
+            val ref = database.getReference("SmartPond")
 
-        ref.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (!snapshot.exists()) return
+            ref.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!snapshot.exists()) return
 
-                val dataNode = if (snapshot.hasChild("smartpond")) {
-                    snapshot.child("smartpond")
-                } else if (snapshot.hasChild("pond")) {
-                    snapshot.child("pond")
-                } else {
-                    snapshot
-                }
+                    val sensorNode = if (snapshot.hasChild("sensor")) snapshot.child("sensor") else snapshot
 
-                // 1. Current Temperature
-                val suhuVal = dataNode.child("suhu").value
-                    ?: dataNode.child("suhu_air").value
-                    ?: dataNode.child("temperature").value
-                if (suhuVal != null) {
-                    val sStr = suhuVal.toString().replace("°C", "").trim()
-                    val sFloat = sStr.toFloatOrNull()
-                    if (sFloat != null) {
-                        tvMainSensorValue.text = String.format(Locale.getDefault(), "%.1f °C", sFloat)
-                    } else {
-                        tvMainSensorValue.text = suhuVal.toString()
-                    }
-                }
-
-                // 2. Min Temp & Time
-                val minVal = dataNode.child("suhu_terendah").value
-                    ?: dataNode.child("temp_min").value
-                    ?: dataNode.child("min_temp").value
-                if (minVal != null) {
-                    val mStr = minVal.toString().replace("°C", "").trim()
-                    val mFloat = mStr.toFloatOrNull()
-                    if (mFloat != null) {
-                        tvMinVal.text = String.format(Locale.getDefault(), "%.1f °C", mFloat)
-                    } else {
-                        tvMinVal.text = minVal.toString()
-                    }
-                }
-
-                val minTime = dataNode.child("suhu_terendah_waktu").value
-                    ?: dataNode.child("min_temp_time").value
-                if (minTime != null) {
-                    tvMinTime.text = minTime.toString()
-                }
-
-                // 3. Max Temp & Time
-                val maxVal = dataNode.child("suhu_tertinggi").value
-                    ?: dataNode.child("temp_max").value
-                    ?: dataNode.child("max_temp").value
-                if (maxVal != null) {
-                    val mxStr = maxVal.toString().replace("°C", "").trim()
-                    val mxFloat = mxStr.toFloatOrNull()
-                    if (mxFloat != null) {
-                        tvMaxVal.text = String.format(Locale.getDefault(), "%.1f °C", mxFloat)
-                    } else {
-                        tvMaxVal.text = maxVal.toString()
-                    }
-                }
-
-                val maxTime = dataNode.child("suhu_tertinggi_waktu").value
-                    ?: dataNode.child("max_temp_time").value
-                if (maxTime != null) {
-                    tvMaxTime.text = maxTime.toString()
-                }
-
-                // 4. Average Temp
-                val avgVal = dataNode.child("suhu_ratarata").value
-                    ?: dataNode.child("temp_avg").value
-                    ?: dataNode.child("avg_temp").value
-                if (avgVal != null) {
-                    val aStr = avgVal.toString().replace("°C", "").trim()
-                    val aFloat = aStr.toFloatOrNull()
-                    if (aFloat != null) {
-                        tvAvgVal.text = String.format(Locale.getDefault(), "%.1f °C", aFloat)
-                    } else {
-                        tvAvgVal.text = avgVal.toString()
-                    }
-                }
-
-                // 5. Temperature History (Chart Points)
-                val historyNode = dataNode.child("riwayat_suhu")
-                if (historyNode.exists()) {
-                    val pointsList = mutableListOf<Float>()
-                    for (child in historyNode.children) {
-                        val pVal = child.value?.toString()?.toFloatOrNull()
-                        if (pVal != null) {
-                            pointsList.add(pVal)
+                    // 1. Current Temperature
+                    val suhuVal = sensorNode.child("suhu").value
+                    if (suhuVal != null) {
+                        val sStr = suhuVal.toString().replace("°C", "").trim()
+                        val sFloat = sStr.toFloatOrNull()
+                        if (sFloat != null) {
+                            tvMainSensorValue.text = String.format(Locale.getDefault(), "%.1f °C", sFloat)
+                        } else {
+                            tvMainSensorValue.text = suhuVal.toString()
                         }
                     }
-                    if (pointsList.isNotEmpty()) {
-                        liveSuhuHistory = pointsList
-                        updateChart()
+
+                    // 2. Min Temp & Time
+                    val minVal = sensorNode.child("suhu_terendah").value
+                        ?: sensorNode.child("temp_min").value
+                    if (minVal != null) {
+                        val mStr = minVal.toString().replace("°C", "").trim()
+                        val mFloat = mStr.toFloatOrNull()
+                        if (mFloat != null) {
+                            tvMinVal.text = String.format(Locale.getDefault(), "%.1f °C", mFloat)
+                        } else {
+                            tvMinVal.text = minVal.toString()
+                        }
+                    }
+
+                    val minTime = sensorNode.child("suhu_terendah_waktu").value
+                    if (minTime != null) {
+                        tvMinTime.text = minTime.toString()
+                    }
+
+                    // 3. Max Temp & Time
+                    val maxVal = sensorNode.child("suhu_tertinggi").value
+                        ?: sensorNode.child("temp_max").value
+                    if (maxVal != null) {
+                        val mxStr = maxVal.toString().replace("°C", "").trim()
+                        val mxFloat = mxStr.toFloatOrNull()
+                        if (mxFloat != null) {
+                            tvMaxVal.text = String.format(Locale.getDefault(), "%.1f °C", mxFloat)
+                        } else {
+                            tvMaxVal.text = maxVal.toString()
+                        }
+                    }
+
+                    val maxTime = sensorNode.child("suhu_tertinggi_waktu").value
+                    if (maxTime != null) {
+                        tvMaxTime.text = maxTime.toString()
+                    }
+
+                    // 4. Average Temp
+                    val avgVal = sensorNode.child("suhu_ratarata").value
+                        ?: sensorNode.child("temp_avg").value
+                    if (avgVal != null) {
+                        val aStr = avgVal.toString().replace("°C", "").trim()
+                        val aFloat = aStr.toFloatOrNull()
+                        if (aFloat != null) {
+                            tvAvgVal.text = String.format(Locale.getDefault(), "%.1f °C", aFloat)
+                        } else {
+                            tvAvgVal.text = avgVal.toString()
+                        }
+                    }
+
+                    // 5. Temperature History
+                    val historyNode = sensorNode.child("riwayat_suhu")
+                    if (historyNode.exists()) {
+                        val pointsList = mutableListOf<Float>()
+                        for (child in historyNode.children) {
+                            val pVal = child.value?.toString()?.toFloatOrNull()
+                            if (pVal != null) {
+                                pointsList.add(pVal)
+                            }
+                        }
+                        if (pointsList.isNotEmpty()) {
+                            liveSuhuHistory = pointsList
+                            updateChart()
+                        }
                     }
                 }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("SensorActivity", "Database error: ${error.message}")
-            }
-        })
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("SensorActivity", "Database error: ${error.message}")
+                }
+            })
+        } catch (e: Exception) {
+            Log.e("SensorActivity", "Firebase init error: ${e.message}")
+        }
     }
 
     private fun setupBottomNavigation() {
+        bottomNavigation.setOnItemSelectedListener(null)
         bottomNavigation.selectedItemId = R.id.nav_sensor
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {

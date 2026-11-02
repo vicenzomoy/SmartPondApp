@@ -29,7 +29,6 @@ import java.util.Locale
 
 class KontrolActivity : AppCompatActivity() {
 
-    private lateinit var btnBack: ImageButton
     private lateinit var btnNotification: ImageButton
     private lateinit var btnFeedNow: LinearLayout
     private lateinit var btnStop: LinearLayout
@@ -49,7 +48,7 @@ class KontrolActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainKontrol)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
@@ -63,12 +62,16 @@ class KontrolActivity : AppCompatActivity() {
     }
 
     private fun initFirebase() {
-        val database = FirebaseDatabase.getInstance()
-        dbRef = database.reference
+        try {
+            val database = FirebaseDatabase.getInstance("https://smartpondapp-default-rtdb.asia-southeast1.firebasedatabase.app/")
+            dbRef = database.reference.child("SmartPond")
+        } catch (e: Exception) {
+            Log.e("KontrolActivity", "Firebase init error: ${e.message}")
+            dbRef = FirebaseDatabase.getInstance().reference
+        }
     }
 
     private fun initViews() {
-        btnBack = findViewById(R.id.btnBack)
         btnNotification = findViewById(R.id.btnNotification)
         btnFeedNow = findViewById(R.id.btnFeedNow)
         btnStop = findViewById(R.id.btnStop)
@@ -92,12 +95,6 @@ class KontrolActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        btnBack.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-
         btnNotification.setOnClickListener {
             startActivity(Intent(this, NotifikasiActivity::class.java))
         }
@@ -117,12 +114,12 @@ class KontrolActivity : AppCompatActivity() {
 
     private fun sendFeedNowCommand() {
         tvFeederStatusText.text = "Status: Memberi Pakan..."
-        Toast.makeText(this, "Perintah Feed Now dikirim ke ESP32", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Perintah Feed Now dikirim!", Toast.LENGTH_SHORT).show()
 
         val updates = mapOf<String, Any>(
-            "smartpond/feed_now" to true,
-            "smartpond/feeder_status" to "FEEDING",
-            "smartpond/last_feed_time" to System.currentTimeMillis()
+            "feed_now" to true,
+            "feeder_status" to "FEEDING",
+            "last_feed_time" to System.currentTimeMillis()
         )
         dbRef.updateChildren(updates).addOnFailureListener { error ->
             Log.e("KontrolActivity", "Failed to send feed now: ${error.message}")
@@ -134,8 +131,8 @@ class KontrolActivity : AppCompatActivity() {
         Toast.makeText(this, "Pemberian pakan dihentikan", Toast.LENGTH_SHORT).show()
 
         val updates = mapOf<String, Any>(
-            "smartpond/feed_now" to false,
-            "smartpond/feeder_status" to "STOPPED"
+            "feed_now" to false,
+            "feeder_status" to "STOPPED"
         )
         dbRef.updateChildren(updates).addOnFailureListener { error ->
             Log.e("KontrolActivity", "Failed to send stop command: ${error.message}")
@@ -143,7 +140,6 @@ class KontrolActivity : AppCompatActivity() {
     }
 
     private fun loadDefaultSchedulesIfEmpty() {
-        // Provide default schedules matching the screenshot requirement if offline or DB is empty
         if (jadwalList.isEmpty()) {
             val defaultList = listOf(
                 JadwalPakan("sched_1", "08:00", "Pagi", "Porsi 1x", true),
@@ -156,20 +152,13 @@ class KontrolActivity : AppCompatActivity() {
     }
 
     private fun listenRealtimeDatabase() {
-        // Listen to "smartpond" node in Firebase
         dbRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (!snapshot.exists()) return
 
-                val dataNode = if (snapshot.hasChild("smartpond")) {
-                    snapshot.child("smartpond")
-                } else {
-                    snapshot
-                }
-
                 // 1. Feeder Status & Feed Now flag
-                val feedNowVal = dataNode.child("feed_now").value as? Boolean
-                val feederStatusVal = dataNode.child("feeder_status").value?.toString()
+                val feedNowVal = snapshot.child("feed_now").value as? Boolean
+                val feederStatusVal = snapshot.child("feeder_status").value?.toString()
 
                 if (feederStatusVal != null) {
                     when (feederStatusVal.uppercase()) {
@@ -182,7 +171,7 @@ class KontrolActivity : AppCompatActivity() {
                 }
 
                 // 2. Schedules
-                val jadwalNode = dataNode.child("jadwal_pakan")
+                val jadwalNode = snapshot.child("jadwal_pakan")
                 if (jadwalNode.exists()) {
                     val newList = mutableListOf<JadwalPakan>()
                     for (child in jadwalNode.children) {
@@ -211,8 +200,7 @@ class KontrolActivity : AppCompatActivity() {
     }
 
     private fun onJadwalToggleChanged(item: JadwalPakan, isChecked: Boolean) {
-        val targetPath = "smartpond/jadwal_pakan/${item.id}/enabled"
-        dbRef.child(targetPath).setValue(isChecked).addOnFailureListener {
+        dbRef.child("jadwal_pakan").child(item.id).child("enabled").setValue(isChecked).addOnFailureListener {
             Toast.makeText(this, "Gagal mengubah status jadwal di Firebase", Toast.LENGTH_SHORT).show()
         }
     }
@@ -241,8 +229,7 @@ class KontrolActivity : AppCompatActivity() {
         jadwalList.remove(item)
         adapter.notifyDataSetChanged()
 
-        val targetPath = "smartpond/jadwal_pakan/${item.id}"
-        dbRef.child(targetPath).removeValue()
+        dbRef.child("jadwal_pakan").child(item.id).removeValue()
         Toast.makeText(this, "Jadwal ${item.time} dihapus", Toast.LENGTH_SHORT).show()
     }
 
@@ -317,8 +304,7 @@ class KontrolActivity : AppCompatActivity() {
             "enabled" to item.enabled
         )
 
-        val targetPath = "smartpond/jadwal_pakan/${item.id}"
-        dbRef.child(targetPath).setValue(itemMap).addOnSuccessListener {
+        dbRef.child("jadwal_pakan").child(item.id).setValue(itemMap).addOnSuccessListener {
             Toast.makeText(this, "Jadwal berhasil disimpan", Toast.LENGTH_SHORT).show()
         }.addOnFailureListener { error ->
             Log.e("KontrolActivity", "Failed to save schedule: ${error.message}")
@@ -327,6 +313,7 @@ class KontrolActivity : AppCompatActivity() {
 
     private fun setupBottomNavigation() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
+        bottomNav.setOnItemSelectedListener(null)
         bottomNav.selectedItemId = R.id.nav_kontrol
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
