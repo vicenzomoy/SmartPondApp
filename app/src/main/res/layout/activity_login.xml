@@ -24,8 +24,9 @@
             android:layout_height="150dp"
             android:contentDescription="@string/app_name"
             android:scaleType="centerCrop"
-            android:background="@drawable/bg_circle"
+            android:background="@drawable/bg_square_logo"
             android:clipToOutline="true"
+            android:elevation="4dp"
             android:src="@drawable/logo_smartpond" />
 
         <TextView

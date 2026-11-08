@@ -1,7 +1,6 @@
 package edu.uph.m24si2.smartpondapp
 
 import android.app.DatePickerDialog
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageButton
@@ -14,7 +13,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -30,13 +28,11 @@ class RiwayatDataActivity : AppCompatActivity() {
     private lateinit var tvSelectedDate: TextView
 
     private lateinit var tabSuhu: TextView
-    private lateinit var tabKekeruhan: TextView
     private lateinit var tabLevelAir: TextView
     private lateinit var tabEnergi: TextView
 
     private lateinit var historyChartView: HistoryChartView
     private lateinit var rvRiwayatData: RecyclerView
-    private lateinit var bottomNavigation: BottomNavigationView
 
     private lateinit var adapter: RiwayatAdapter
     private val riwayatList = mutableListOf<RiwayatData>()
@@ -51,14 +47,13 @@ class RiwayatDataActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainRiwayatData)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
         initViews()
         setupRecyclerView()
         setupListeners()
-        setupBottomNavigation()
 
         updateDateDisplay()
         selectTab(0)
@@ -71,13 +66,11 @@ class RiwayatDataActivity : AppCompatActivity() {
         tvSelectedDate = findViewById(R.id.tvSelectedDate)
 
         tabSuhu = findViewById(R.id.tabSuhu)
-        tabKekeruhan = findViewById(R.id.tabKekeruhan)
         tabLevelAir = findViewById(R.id.tabLevelAir)
         tabEnergi = findViewById(R.id.tabEnergi)
 
         historyChartView = findViewById(R.id.historyChartView)
         rvRiwayatData = findViewById(R.id.rvRiwayatData)
-        bottomNavigation = findViewById(R.id.bottomNavigation)
     }
 
     private fun setupRecyclerView() {
@@ -96,9 +89,8 @@ class RiwayatDataActivity : AppCompatActivity() {
         }
 
         tabSuhu.setOnClickListener { selectTab(0) }
-        tabKekeruhan.setOnClickListener { selectTab(1) }
-        tabLevelAir.setOnClickListener { selectTab(2) }
-        tabEnergi.setOnClickListener { selectTab(3) }
+        tabLevelAir.setOnClickListener { selectTab(1) }
+        tabEnergi.setOnClickListener { selectTab(2) }
     }
 
     private fun showDatePicker() {
@@ -127,7 +119,7 @@ class RiwayatDataActivity : AppCompatActivity() {
     private fun selectTab(tabIndex: Int) {
         selectedTabIndex = tabIndex
 
-        val tabs = listOf(tabSuhu, tabKekeruhan, tabLevelAir, tabEnergi)
+        val tabs = listOf(tabSuhu, tabLevelAir, tabEnergi)
         for (i in tabs.indices) {
             val isSelected = (i == tabIndex)
             tabs[i].background = ContextCompat.getDrawable(this, if (isSelected) R.drawable.bg_tab_selected else R.drawable.bg_tab_unselected)
@@ -166,20 +158,6 @@ class RiwayatDataActivity : AppCompatActivity() {
                 ))
             }
             1 -> {
-                colorHex = "#00A8E8"
-                chartPoints = listOf(12.0f, 12.2f, 11.9f, 12.1f, 12.5f, 12.3f, 12.0f, 11.8f, 12.4f, 12.6f, 12.1f, 11.9f, 12.0f)
-                detailDataList.addAll(listOf(
-                    RiwayatData("00:00", "12.3 NTU"),
-                    RiwayatData("01:00", "12.1 NTU"),
-                    RiwayatData("02:00", "11.9 NTU"),
-                    RiwayatData("03:00", "12.0 NTU"),
-                    RiwayatData("04:00", "12.5 NTU"),
-                    RiwayatData("05:00", "12.3 NTU"),
-                    RiwayatData("06:00", "12.0 NTU"),
-                    RiwayatData("07:00", "11.8 NTU")
-                ))
-            }
-            2 -> {
                 colorHex = "#0288D1"
                 chartPoints = listOf(95f, 95f, 94f, 95f, 96f, 95f, 95f, 94f, 95f, 95f)
                 detailDataList.addAll(listOf(
@@ -220,8 +198,7 @@ class RiwayatDataActivity : AppCompatActivity() {
 
                     val sensorKey = when (selectedTabIndex) {
                         0 -> "suhu"
-                        1 -> "kekeruhan"
-                        2 -> "level_air"
+                        1 -> "level_air"
                         else -> "energi"
                     }
 
@@ -246,8 +223,7 @@ class RiwayatDataActivity : AppCompatActivity() {
                             if (points.size >= 2) {
                                 val colorHex = when (selectedTabIndex) {
                                     0 -> "#FF5252"
-                                    1 -> "#00A8E8"
-                                    2 -> "#0288D1"
+                                    1 -> "#0288D1"
                                     else -> "#20B978"
                                 }
                                 historyChartView.setChartData(points, colorHex)
@@ -262,46 +238,6 @@ class RiwayatDataActivity : AppCompatActivity() {
             })
         } catch (e: Exception) {
             Log.e("RiwayatDataActivity", "Firebase init error: ${e.message}")
-        }
-    }
-
-    private fun setupBottomNavigation() {
-        bottomNavigation.setOnItemSelectedListener(null)
-        bottomNavigation.selectedItemId = R.id.nav_beranda
-        bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_beranda -> {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    overridePendingTransition(0, 0)
-                    finish()
-                    true
-                }
-                R.id.nav_sensor -> {
-                    startActivity(Intent(this, SensorActivity::class.java))
-                    overridePendingTransition(0, 0)
-                    finish()
-                    true
-                }
-                R.id.nav_kontrol -> {
-                    startActivity(Intent(this, KontrolActivity::class.java))
-                    overridePendingTransition(0, 0)
-                    finish()
-                    true
-                }
-                R.id.nav_energi -> {
-                    startActivity(Intent(this, EnergiActivity::class.java))
-                    overridePendingTransition(0, 0)
-                    finish()
-                    true
-                }
-                R.id.nav_pengaturan -> {
-                    startActivity(Intent(this, PengaturanActivity::class.java))
-                    overridePendingTransition(0, 0)
-                    finish()
-                    true
-                }
-                else -> false
-            }
         }
     }
 }

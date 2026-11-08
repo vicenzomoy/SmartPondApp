@@ -37,7 +37,7 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/cd_notification"
-            android:src="@drawable/ic_bell_badge_24"
+            android:src="@drawable/ic_bell_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -60,7 +60,7 @@
             android:paddingHorizontal="16dp"
             android:paddingBottom="24dp">
 
-            <!-- Sensor Type Tabs (Suhu, Kekeruhan, Level Air) -->
+            <!-- Sensor Type Tabs (Suhu, Level Air) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -77,19 +77,6 @@
                     android:gravity="center"
                     android:text="@string/tab_suhu"
                     android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tabKekeruhan"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_marginEnd="6dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_tab_unselected"
-                    android:gravity="center"
-                    android:text="@string/tab_kekeruhan"
-                    android:textColor="@color/sp_muted"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 

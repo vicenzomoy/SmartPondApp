@@ -1,13 +1,17 @@
 package edu.uph.m24si2.smartpondapp
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -21,16 +25,14 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var btnMenu: ImageButton
     private lateinit var btnNotification: ImageButton
+    private lateinit var viewStatusDot: View
+    private lateinit var ivWifiIcon: ImageView
     private lateinit var tvSystemStatus: TextView
     private lateinit var tvSystemConnection: TextView
 
     private lateinit var tvSuhuValue: TextView
     private lateinit var tvSuhuRange: TextView
     private lateinit var tvSuhuStatus: TextView
-
-    private lateinit var tvKekeruhanValue: TextView
-    private lateinit var tvKekeruhanStatusText: TextView
-    private lateinit var tvKekeruhanStatus: TextView
 
     private lateinit var tvLevelAirValue: TextView
 
@@ -62,16 +64,14 @@ class MainActivity : AppCompatActivity() {
     private fun initViews() {
         btnMenu = findViewById(R.id.btnMenu)
         btnNotification = findViewById(R.id.btnNotification)
+        viewStatusDot = findViewById(R.id.viewStatusDot)
+        ivWifiIcon = findViewById(R.id.ivWifiIcon)
         tvSystemStatus = findViewById(R.id.tvSystemStatus)
         tvSystemConnection = findViewById(R.id.tvSystemConnection)
 
         tvSuhuValue = findViewById(R.id.tvSuhuValue)
         tvSuhuRange = findViewById(R.id.tvSuhuRange)
         tvSuhuStatus = findViewById(R.id.tvSuhuStatus)
-
-        tvKekeruhanValue = findViewById(R.id.tvKekeruhanValue)
-        tvKekeruhanStatusText = findViewById(R.id.tvKekeruhanStatusText)
-        tvKekeruhanStatus = findViewById(R.id.tvKekeruhanStatus)
 
         tvLevelAirValue = findViewById(R.id.tvLevelAirValue)
 
@@ -128,14 +128,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun listenRealtimeDatabase() {
-        try {
-            ref = FirebaseDatabase
-                .getInstance("https://smartpondapp-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                .getReference("SmartPond")
+        // Sets status to always online (Sistem Online & Terhubung)
+        setSystemStatusState()
 
+        try {
+            val dbUrl = "https://smartpondapp-default-rtdb.asia-southeast1.firebasedatabase.app/"
+            val db = FirebaseDatabase.getInstance(dbUrl)
+
+            ref = db.getReference("SmartPond")
             ref.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (!snapshot.exists()) return
+
+                    val statusSysVal = snapshot.child("status_sistem").value?.toString()
+                    setSystemStatusState(
+                        statusText = statusSysVal ?: getString(R.string.status_system_online),
+                        connectionText = getString(R.string.status_connected)
+                    )
+
+                    // Notification badge update
+                    val hasUnreadNotif = snapshot.child("ada_notifikasi").value == true
+                        || snapshot.child("notifikasi_unread").value == true
+                    btnNotification.setImageResource(if (hasUnreadNotif) R.drawable.ic_bell_badge_24 else R.drawable.ic_bell_24)
 
                     val sensorNode = if (snapshot.hasChild("sensor")) snapshot.child("sensor") else snapshot
 
@@ -147,19 +161,7 @@ class MainActivity : AppCompatActivity() {
                         tvSuhuValue.text = if (suhuStr.contains("°C")) suhuStr else "$suhuStr°C"
                     }
 
-                    // 2. Kekeruhan
-                    val kekeruhan = sensorNode.child("kekeruhan").value
-                    if (kekeruhan != null) {
-                        val kekeruhanStr = kekeruhan.toString()
-                        tvKekeruhanValue.text = if (kekeruhanStr.contains("NTU")) kekeruhanStr else "$kekeruhanStr NTU"
-                    }
-
-                    val kekeruhanStatus = sensorNode.child("kekeruhan_status").value
-                    if (kekeruhanStatus != null) {
-                        tvKekeruhanStatusText.text = kekeruhanStatus.toString()
-                    }
-
-                    // 3. Level Air
+                    // 2. Level Air
                     val levelAir = sensorNode.child("status_air").value
                         ?: sensorNode.child("level_air").value
                     if (levelAir != null) {
@@ -167,7 +169,7 @@ class MainActivity : AppCompatActivity() {
                         tvLevelAirValue.text = levelStr.replaceFirstChar { it.uppercaseChar() }
                     }
 
-                    // 4. Baterai
+                    // 3. Baterai
                     val batVolt = snapshot.child("baterai_volt").value
                         ?: snapshot.child("baterai").child("volt").value
                     if (batVolt != null) {
@@ -186,12 +188,6 @@ class MainActivity : AppCompatActivity() {
                             tvBateraiPercent.text = batPercent.toString()
                         }
                     }
-
-                    // System status
-                    val statusSys = snapshot.child("status_sistem").value
-                    if (statusSys != null) {
-                        tvSystemStatus.text = statusSys.toString()
-                    }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -201,5 +197,18 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.e("MainActivity", "Firebase init error: ${e.message}")
         }
+    }
+
+    private fun setSystemStatusState(
+        statusText: String? = null,
+        connectionText: String? = null
+    ) {
+        val greenColor = ContextCompat.getColor(this, R.color.sp_green)
+        tvSystemStatus.text = statusText ?: getString(R.string.status_system_online)
+        tvSystemConnection.text = connectionText ?: getString(R.string.status_connected)
+        tvSystemConnection.setTextColor(ContextCompat.getColor(this, R.color.sp_muted))
+
+        viewStatusDot.backgroundTintList = ColorStateList.valueOf(greenColor)
+        ivWifiIcon.imageTintList = ColorStateList.valueOf(greenColor)
     }
 }

@@ -198,14 +198,14 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- 2x2 Grid of Dashboard Metric Cards -->
+            <!-- Grid of Dashboard Metric Cards -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:orientation="vertical">
 
-                <!-- Row 1: Suhu Air & Kekeruhan -->
+                <!-- Row 1: Suhu Air & Level Air -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -285,95 +285,12 @@
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <!-- Card 2: Kekeruhan -->
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/cardKekeruhan"
-                        android:layout_width="0dp"
-                        android:layout_height="160dp"
-                        android:layout_marginStart="6dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_card_rounded"
-                        android:elevation="1dp"
-                        android:padding="14dp">
-
-                        <ImageView
-                            android:id="@+id/ivKekeruhanIcon"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:contentDescription="@string/title_turbidity"
-                            android:src="@drawable/ic_waves"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <TextView
-                            android:id="@+id/tvKekeruhanTitle"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="@string/title_turbidity"
-                            android:textColor="@color/sp_navy"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            app:layout_constraintBottom_toBottomOf="@id/ivKekeruhanIcon"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toEndOf="@id/ivKekeruhanIcon"
-                            app:layout_constraintTop_toTopOf="@id/ivKekeruhanIcon" />
-
-                        <TextView
-                            android:id="@+id/tvKekeruhanValue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="@string/default_kekeruhan"
-                            android:textColor="@color/sp_navy"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/ivKekeruhanIcon" />
-
-                        <TextView
-                            android:id="@+id/tvKekeruhanStatusText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="@string/default_kekeruhan_status"
-                            android:textColor="@color/sp_muted"
-                            android:textSize="11sp"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/tvKekeruhanValue" />
-
-                        <TextView
-                            android:id="@+id/tvKekeruhanStatus"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_status_badge"
-                            android:paddingHorizontal="10dp"
-                            android:paddingVertical="3dp"
-                            android:text="@string/status_normal"
-                            android:textColor="@color/sp_green"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintStart_toStartOf="parent" />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                </LinearLayout>
-
-                <!-- Row 2: Level Air & Baterai -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:baselineAligned="false"
-                    android:orientation="horizontal">
-
-                    <!-- Card 3: Level Air -->
+                    <!-- Card 2: Level Air -->
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/cardLevelAir"
                         android:layout_width="0dp"
                         android:layout_height="160dp"
-                        android:layout_marginEnd="6dp"
+                        android:layout_marginStart="6dp"
                         android:layout_weight="1"
                         android:background="@drawable/bg_card_rounded"
                         android:elevation="1dp">
@@ -429,80 +346,79 @@
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <!-- Card 4: Baterai -->
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/cardBaterai"
-                        android:layout_width="0dp"
-                        android:layout_height="160dp"
-                        android:layout_marginStart="6dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_card_rounded"
-                        android:elevation="1dp"
-                        android:padding="14dp">
-
-                        <ImageView
-                            android:id="@+id/ivBateraiIcon"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:contentDescription="@string/title_battery"
-                            android:src="@drawable/ic_battery"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <TextView
-                            android:id="@+id/tvBateraiTitle"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="@string/title_battery"
-                            android:textColor="@color/sp_navy"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            app:layout_constraintBottom_toBottomOf="@id/ivBateraiIcon"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toEndOf="@id/ivBateraiIcon"
-                            app:layout_constraintTop_toTopOf="@id/ivBateraiIcon" />
-
-                        <TextView
-                            android:id="@+id/tvBateraiVolt"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="@string/default_baterai_volt"
-                            android:textColor="@color/sp_navy"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/ivBateraiIcon" />
-
-                        <TextView
-                            android:id="@+id/tvBateraiPercent"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="@string/default_baterai_percent"
-                            android:textColor="@color/sp_navy"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/tvBateraiVolt" />
-
-                        <!-- Battery level progress bar -->
-                        <ProgressBar
-                            android:id="@+id/pbBaterai"
-                            style="?android:attr/progressBarStyleHorizontal"
-                            android:layout_width="match_parent"
-                            android:layout_height="10dp"
-                            android:max="100"
-                            android:progress="78"
-                            android:progressDrawable="@drawable/bg_battery_progress_fill"
-                            android:background="@drawable/bg_battery_progress_track"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintStart_toStartOf="parent" />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
                 </LinearLayout>
+
+                <!-- Row 2: Baterai (Full Width Card) -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/cardBaterai"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_card_rounded"
+                    android:elevation="1dp"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:id="@+id/ivBateraiIcon"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:contentDescription="@string/title_battery"
+                        android:src="@drawable/ic_battery"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvBateraiTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/title_battery"
+                        android:textColor="@color/sp_navy"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="@id/ivBateraiIcon"
+                        app:layout_constraintStart_toEndOf="@id/ivBateraiIcon"
+                        app:layout_constraintTop_toTopOf="@id/ivBateraiIcon" />
+
+                    <TextView
+                        android:id="@+id/tvBateraiPercent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/default_baterai_percent"
+                        android:textColor="@color/sp_navy"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="@id/ivBateraiIcon"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/ivBateraiIcon" />
+
+                    <TextView
+                        android:id="@+id/tvBateraiVolt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/default_baterai_volt"
+                        android:textColor="@color/sp_navy"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/ivBateraiIcon" />
+
+                    <!-- Battery level progress bar -->
+                    <ProgressBar
+                        android:id="@+id/pbBaterai"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="10dp"
+                        android:layout_marginTop="10dp"
+                        android:max="100"
+                        android:progress="78"
+                        android:progressDrawable="@drawable/bg_battery_progress_fill"
+                        android:background="@drawable/bg_battery_progress_track"
+                        app:layout_constraintTop_toBottomOf="@id/tvBateraiVolt"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>
 

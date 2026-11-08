@@ -139,6 +139,10 @@ class EnergiActivity : AppCompatActivity() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (!snapshot.exists()) return
 
+                    val hasUnreadNotif = snapshot.child("ada_notifikasi").value == true
+                        || snapshot.child("notifikasi_unread").value == true
+                    btnNotification.setImageResource(if (hasUnreadNotif) R.drawable.ic_bell_badge_24 else R.drawable.ic_bell_24)
+
                     // 1. Battery percent
                     val batPercent = snapshot.child("baterai_persen").value
                         ?: snapshot.child("baterai").child("persen").value

@@ -22,7 +22,6 @@ class SensorActivity : AppCompatActivity() {
 
     private lateinit var btnNotification: ImageButton
     private lateinit var tabSuhu: TextView
-    private lateinit var tabKekeruhan: TextView
     private lateinit var tabLevelAir: TextView
 
     private lateinit var ivMainSensorIcon: ImageView
@@ -58,7 +57,6 @@ class SensorActivity : AppCompatActivity() {
     private var activeTimeRange: String = "1d"
 
     private var liveSuhuHistory: List<Float> = listOf(25.2f, 24.3f, 24.0f, 25.5f, 26.8f, 28.5f, 26.0f, 25.2f, 25.8f, 26.2f, 25.9f)
-    private var liveKekeruhanHistory: List<Float> = listOf(14f, 13f, 11f, 12f, 12f, 15f, 13f, 12f, 12f, 13f, 12f)
     private var liveLevelAirHistory: List<Float> = listOf(90f, 92f, 95f, 94f, 96f, 95f, 97f, 95f, 96f, 95f, 95f)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,7 +79,6 @@ class SensorActivity : AppCompatActivity() {
     private fun initViews() {
         btnNotification = findViewById(R.id.btnNotification)
         tabSuhu = findViewById(R.id.tabSuhu)
-        tabKekeruhan = findViewById(R.id.tabKekeruhan)
         tabLevelAir = findViewById(R.id.tabLevelAir)
 
         ivMainSensorIcon = findViewById(R.id.ivMainSensorIcon)
@@ -120,7 +117,6 @@ class SensorActivity : AppCompatActivity() {
         }
 
         tabSuhu.setOnClickListener { selectTab("suhu") }
-        tabKekeruhan.setOnClickListener { selectTab("kekeruhan") }
         tabLevelAir.setOnClickListener { selectTab("level_air") }
 
         btnTime6h.setOnClickListener { selectTimeRange("6h") }
@@ -139,9 +135,6 @@ class SensorActivity : AppCompatActivity() {
 
         tabSuhu.background = if (tab == "suhu") selectedBg else unselectedBg
         tabSuhu.setTextColor(if (tab == "suhu") selectedColor else unselectedColor)
-
-        tabKekeruhan.background = if (tab == "kekeruhan") selectedBg else unselectedBg
-        tabKekeruhan.setTextColor(if (tab == "kekeruhan") selectedColor else unselectedColor)
 
         tabLevelAir.background = if (tab == "level_air") selectedBg else unselectedBg
         tabLevelAir.setTextColor(if (tab == "level_air") selectedColor else unselectedColor)
@@ -188,20 +181,6 @@ class SensorActivity : AppCompatActivity() {
                 tvAvgTitle.text = "Rata-rata Hari Ini"
                 ivAvgIcon.setImageResource(R.drawable.ic_thermometer)
             }
-            "kekeruhan" -> {
-                ivMainSensorIcon.setImageResource(R.drawable.ic_waves)
-                tvMainSensorTitle.text = "Kekeruhan Saat Ini"
-                tvMainSensorSubtext.text = "Rentang Ideal: < 25 NTU"
-
-                tvMinTitle.text = "Kekeruhan Terendah"
-                ivMinIcon.setImageResource(R.drawable.ic_waves)
-
-                tvMaxTitle.text = "Kekeruhan Tertinggi"
-                ivMaxIcon.setImageResource(R.drawable.ic_waves)
-
-                tvAvgTitle.text = "Rata-rata Hari Ini"
-                ivAvgIcon.setImageResource(R.drawable.ic_waves)
-            }
             "level_air" -> {
                 ivMainSensorIcon.setImageResource(R.drawable.ic_droplet)
                 tvMainSensorTitle.text = "Level Air Saat Ini"
@@ -222,7 +201,6 @@ class SensorActivity : AppCompatActivity() {
 
     private fun updateChart() {
         val (history, labels, suffix) = when (activeTab) {
-            "kekeruhan" -> Triple(liveKekeruhanHistory, getTimeLabels(activeTimeRange), "NTU")
             "level_air" -> Triple(liveLevelAirHistory, getTimeLabels(activeTimeRange), "%")
             else -> Triple(liveSuhuHistory, getTimeLabels(activeTimeRange), "°C")
         }
@@ -258,6 +236,10 @@ class SensorActivity : AppCompatActivity() {
             ref.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (!snapshot.exists()) return
+
+                    val hasUnreadNotif = snapshot.child("ada_notifikasi").value == true
+                        || snapshot.child("notifikasi_unread").value == true
+                    btnNotification.setImageResource(if (hasUnreadNotif) R.drawable.ic_bell_badge_24 else R.drawable.ic_bell_24)
 
                     val sensorNode = if (snapshot.hasChild("sensor")) snapshot.child("sensor") else snapshot
 
