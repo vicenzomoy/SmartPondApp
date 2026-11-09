@@ -5,5 +5,7 @@ data class NotifikasiItem(
     var title: String = "",
     var message: String = "",
     var time: String = "",
-    var type: String = "info" // "suhu", "kekeruhan", "level", "pompa", "feeder"
+    var type: String = "info", // "alert", "warning", "info", "success"
+    var category: String = "suhu", // "suhu", "level_air", "baterai", "feeder"
+    var isRead: Boolean = false
 )

@@ -2,66 +2,85 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/cardNotifContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
-    android:background="@drawable/bg_card_notif_red"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/bg_card_rounded"
+    android:elevation="1dp"
     android:padding="14dp">
 
-    <!-- Circle Type Icon -->
-    <ImageView
-        android:id="@+id/ivNotifIcon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:contentDescription="Notif Icon"
-        android:src="@drawable/ic_notif_temp_red"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <!-- Category Icon Container Badge -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/containerIcon"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:background="@drawable/bg_status_badge"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <!-- Title & Message -->
-    <LinearLayout
+        <ImageView
+            android:id="@+id/ivIconCategory"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="Category Icon"
+            android:src="@drawable/ic_bell_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Notification Title -->
+    <TextView
+        android:id="@+id/tvTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/tvNotifTime"
-        app:layout_constraintStart_toEndOf="@id/ivNotifIcon"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_marginEnd="8dp"
+        android:textColor="@color/sp_navy"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@id/tvTime"
+        app:layout_constraintStart_toEndOf="@id/containerIcon"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Suhu Air Tinggi!" />
 
-        <TextView
-            android:id="@+id/tvNotifTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/sp_navy"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            tools:text="Suhu Air Terlalu Tinggi" />
-
-        <TextView
-            android:id="@+id/tvNotifMessage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textColor="@color/sp_muted"
-            android:textSize="12sp"
-            tools:text="Suhu mencapai 30.5 °C (di atas batas 30 °C)" />
-
-    </LinearLayout>
-
-    <!-- Time -->
+    <!-- Timestamp -->
     <TextView
-        android:id="@+id/tvNotifTime"
+        android:id="@+id/tvTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#E53935"
-        android:textSize="13sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="@color/sp_muted"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toStartOf="@id/viewUnreadDot"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="14:20" />
+        tools:text="10:30" />
+
+    <!-- Unread Dot Indicator -->
+    <View
+        android:id="@+id/viewUnreadDot"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:layout_marginStart="6dp"
+        android:background="@drawable/bg_status_dot"
+        app:layout_constraintBottom_toBottomOf="@id/tvTime"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvTime" />
+
+    <!-- Notification Message Body -->
+    <TextView
+        android:id="@+id/tvMessage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:lineSpacingExtra="2dp"
+        android:textColor="@color/sp_muted"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/containerIcon"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        tools:text="Suhu air kolam mencapai 31.5 °C, di atas batas normal 30 °C. Harap periksa sistem pendinginan kolam." />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -53,11 +53,26 @@ class SensorActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigation: BottomNavigationView
 
-    private var activeTab: String = "suhu"
-    private var activeTimeRange: String = "1d"
+    private var activeTab: String = "suhu" // "suhu", "level_air"
+    private var activeTimeRange: String = "1d" // "6h", "1d", "1w", "1m"
+
+    // Live sensor values
+    private var currentSuhuFloat: Float = 26.8f
+    private var minSuhuFloat: Float = 25.1f
+    private var maxSuhuFloat: Float = 29.2f
+    private var avgSuhuFloat: Float = 27.1f
+    private var minSuhuTime: String = "04.30"
+    private var maxSuhuTime: String = "14.20"
+
+    private var currentLevelAirFloat: Float = 95.0f
+    private var minLevelAirFloat: Float = 90.0f
+    private var maxLevelAirFloat: Float = 98.0f
+    private var avgLevelAirFloat: Float = 94.5f
+    private var minLevelAirTime: String = "03.15"
+    private var maxLevelAirTime: String = "11.45"
 
     private var liveSuhuHistory: List<Float> = listOf(25.2f, 24.3f, 24.0f, 25.5f, 26.8f, 28.5f, 26.0f, 25.2f, 25.8f, 26.2f, 25.9f)
-    private var liveLevelAirHistory: List<Float> = listOf(90f, 92f, 95f, 94f, 96f, 95f, 97f, 95f, 96f, 95f, 95f)
+    private var liveLevelAirHistory: List<Float> = listOf(90.0f, 92.0f, 95.0f, 94.0f, 96.0f, 95.0f, 97.0f, 95.0f, 96.0f, 95.0f, 95.0f)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -170,30 +185,44 @@ class SensorActivity : AppCompatActivity() {
             "suhu" -> {
                 ivMainSensorIcon.setImageResource(R.drawable.ic_thermometer)
                 tvMainSensorTitle.text = "Suhu Air Saat Ini"
+                tvMainSensorValue.text = String.format(Locale.getDefault(), "%.1f °C", currentSuhuFloat)
                 tvMainSensorSubtext.text = "Rentang Ideal: 24 - 30 °C"
+                tvMainSensorBadge.text = if (currentSuhuFloat in 24.0f..30.0f) "Normal" else "Perlu Cek"
 
                 tvMinTitle.text = "Suhu Terendah"
                 ivMinIcon.setImageResource(R.drawable.ic_thermometer_blue)
+                tvMinVal.text = String.format(Locale.getDefault(), "%.1f °C", minSuhuFloat)
+                tvMinTime.text = minSuhuTime
 
                 tvMaxTitle.text = "Suhu Tertinggi"
                 ivMaxIcon.setImageResource(R.drawable.ic_thermometer_orange)
+                tvMaxVal.text = String.format(Locale.getDefault(), "%.1f °C", maxSuhuFloat)
+                tvMaxTime.text = maxSuhuTime
 
                 tvAvgTitle.text = "Rata-rata Hari Ini"
                 ivAvgIcon.setImageResource(R.drawable.ic_thermometer)
+                tvAvgVal.text = String.format(Locale.getDefault(), "%.1f °C", avgSuhuFloat)
             }
             "level_air" -> {
                 ivMainSensorIcon.setImageResource(R.drawable.ic_droplet)
                 tvMainSensorTitle.text = "Level Air Saat Ini"
-                tvMainSensorSubtext.text = "Status: Normal"
+                tvMainSensorValue.text = String.format(Locale.getDefault(), "%.1f %%", currentLevelAirFloat)
+                tvMainSensorSubtext.text = "Rentang Ideal: 70 - 100 %"
+                tvMainSensorBadge.text = if (currentLevelAirFloat >= 50.0f) "Normal" else "Rendah"
 
                 tvMinTitle.text = "Level Terendah"
                 ivMinIcon.setImageResource(R.drawable.ic_droplet)
+                tvMinVal.text = String.format(Locale.getDefault(), "%.1f %%", minLevelAirFloat)
+                tvMinTime.text = minLevelAirTime
 
                 tvMaxTitle.text = "Level Tertinggi"
                 ivMaxIcon.setImageResource(R.drawable.ic_droplet)
+                tvMaxVal.text = String.format(Locale.getDefault(), "%.1f %%", maxLevelAirFloat)
+                tvMaxTime.text = maxLevelAirTime
 
                 tvAvgTitle.text = "Rata-rata Hari Ini"
                 ivAvgIcon.setImageResource(R.drawable.ic_droplet)
+                tvAvgVal.text = String.format(Locale.getDefault(), "%.1f %%", avgLevelAirFloat)
             }
         }
         updateChart()
@@ -245,80 +274,90 @@ class SensorActivity : AppCompatActivity() {
 
                     // 1. Current Temperature
                     val suhuVal = sensorNode.child("suhu").value
+                        ?: sensorNode.child("suhu_air").value
                     if (suhuVal != null) {
                         val sStr = suhuVal.toString().replace("°C", "").trim()
                         val sFloat = sStr.toFloatOrNull()
                         if (sFloat != null) {
-                            tvMainSensorValue.text = String.format(Locale.getDefault(), "%.1f °C", sFloat)
-                        } else {
-                            tvMainSensorValue.text = suhuVal.toString()
+                            currentSuhuFloat = sFloat
                         }
                     }
 
-                    // 2. Min Temp & Time
-                    val minVal = sensorNode.child("suhu_terendah").value
-                        ?: sensorNode.child("temp_min").value
-                    if (minVal != null) {
-                        val mStr = minVal.toString().replace("°C", "").trim()
-                        val mFloat = mStr.toFloatOrNull()
-                        if (mFloat != null) {
-                            tvMinVal.text = String.format(Locale.getDefault(), "%.1f °C", mFloat)
-                        } else {
-                            tvMinVal.text = minVal.toString()
+                    // 2. Current Level Air (Float percentage 0-100%)
+                    val levelVal = sensorNode.child("level_air").value
+                        ?: sensorNode.child("level_air_percent").value
+                        ?: sensorNode.child("status_air").value
+                    if (levelVal != null) {
+                        val lStr = levelVal.toString().replace("%", "").trim()
+                        val lFloat = lStr.toFloatOrNull()
+                        if (lFloat != null) {
+                            currentLevelAirFloat = lFloat
                         }
                     }
 
-                    val minTime = sensorNode.child("suhu_terendah_waktu").value
-                    if (minTime != null) {
-                        tvMinTime.text = minTime.toString()
-                    }
+                    // 3. Min/Max/Avg Suhu
+                    val minS = sensorNode.child("suhu_terendah").value ?: sensorNode.child("temp_min").value
+                    if (minS != null) minSuhuFloat = minS.toString().replace("°C", "").trim().toFloatOrNull() ?: minSuhuFloat
 
-                    // 3. Max Temp & Time
-                    val maxVal = sensorNode.child("suhu_tertinggi").value
-                        ?: sensorNode.child("temp_max").value
-                    if (maxVal != null) {
-                        val mxStr = maxVal.toString().replace("°C", "").trim()
-                        val mxFloat = mxStr.toFloatOrNull()
-                        if (mxFloat != null) {
-                            tvMaxVal.text = String.format(Locale.getDefault(), "%.1f °C", mxFloat)
-                        } else {
-                            tvMaxVal.text = maxVal.toString()
-                        }
-                    }
+                    val maxS = sensorNode.child("suhu_tertinggi").value ?: sensorNode.child("temp_max").value
+                    if (maxS != null) maxSuhuFloat = maxS.toString().replace("°C", "").trim().toFloatOrNull() ?: maxSuhuFloat
 
-                    val maxTime = sensorNode.child("suhu_tertinggi_waktu").value
-                    if (maxTime != null) {
-                        tvMaxTime.text = maxTime.toString()
-                    }
+                    val avgS = sensorNode.child("suhu_ratarata").value ?: sensorNode.child("temp_avg").value
+                    if (avgS != null) avgSuhuFloat = avgS.toString().replace("°C", "").trim().toFloatOrNull() ?: avgSuhuFloat
 
-                    // 4. Average Temp
-                    val avgVal = sensorNode.child("suhu_ratarata").value
-                        ?: sensorNode.child("temp_avg").value
-                    if (avgVal != null) {
-                        val aStr = avgVal.toString().replace("°C", "").trim()
-                        val aFloat = aStr.toFloatOrNull()
-                        if (aFloat != null) {
-                            tvAvgVal.text = String.format(Locale.getDefault(), "%.1f °C", aFloat)
-                        } else {
-                            tvAvgVal.text = avgVal.toString()
-                        }
-                    }
+                    val minSTimeVal = sensorNode.child("suhu_terendah_waktu").value
+                    if (minSTimeVal != null) minSuhuTime = minSTimeVal.toString()
 
-                    // 5. Temperature History
-                    val historyNode = sensorNode.child("riwayat_suhu")
-                    if (historyNode.exists()) {
+                    val maxSTimeVal = sensorNode.child("suhu_tertinggi_waktu").value
+                    if (maxSTimeVal != null) maxSuhuTime = maxSTimeVal.toString()
+
+                    // 4. Min/Max/Avg Level Air
+                    val minL = sensorNode.child("level_air_terendah").value ?: sensorNode.child("level_min").value
+                    if (minL != null) minLevelAirFloat = minL.toString().replace("%", "").trim().toFloatOrNull() ?: minLevelAirFloat
+
+                    val maxL = sensorNode.child("level_air_tertinggi").value ?: sensorNode.child("level_max").value
+                    if (maxL != null) maxLevelAirFloat = maxL.toString().replace("%", "").trim().toFloatOrNull() ?: maxLevelAirFloat
+
+                    val avgL = sensorNode.child("level_air_ratarata").value ?: sensorNode.child("level_avg").value
+                    if (avgL != null) avgLevelAirFloat = avgL.toString().replace("%", "").trim().toFloatOrNull() ?: avgLevelAirFloat
+
+                    val minLTimeVal = sensorNode.child("level_air_terendah_waktu").value
+                    if (minLTimeVal != null) minLevelAirTime = minLTimeVal.toString()
+
+                    val maxLTimeVal = sensorNode.child("level_air_tertinggi_waktu").value
+                    if (maxLTimeVal != null) maxLevelAirTime = maxLTimeVal.toString()
+
+                    // 5. Suhu History
+                    val historySuhuNode = sensorNode.child("riwayat_suhu")
+                    if (historySuhuNode.exists()) {
                         val pointsList = mutableListOf<Float>()
-                        for (child in historyNode.children) {
-                            val pVal = child.value?.toString()?.toFloatOrNull()
+                        for (child in historySuhuNode.children) {
+                            val pVal = child.value?.toString()?.replace("°C", "")?.toFloatOrNull()
                             if (pVal != null) {
                                 pointsList.add(pVal)
                             }
                         }
                         if (pointsList.isNotEmpty()) {
                             liveSuhuHistory = pointsList
-                            updateChart()
                         }
                     }
+
+                    // 6. Level Air History
+                    val historyLevelNode = sensorNode.child("riwayat_level_air")
+                    if (historyLevelNode.exists()) {
+                        val pointsList = mutableListOf<Float>()
+                        for (child in historyLevelNode.children) {
+                            val pVal = child.value?.toString()?.replace("%", "")?.toFloatOrNull()
+                            if (pVal != null) {
+                                pointsList.add(pVal)
+                            }
+                        }
+                        if (pointsList.isNotEmpty()) {
+                            liveLevelAirHistory = pointsList
+                        }
+                    }
+
+                    updateUI()
                 }
 
                 override fun onCancelled(error: DatabaseError) {

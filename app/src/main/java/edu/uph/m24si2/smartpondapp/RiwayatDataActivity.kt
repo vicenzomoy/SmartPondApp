@@ -17,6 +17,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -38,7 +39,9 @@ class RiwayatDataActivity : AppCompatActivity() {
     private val riwayatList = mutableListOf<RiwayatData>()
 
     private val selectedCalendar: Calendar = Calendar.getInstance()
-    private var selectedTabIndex = 0
+    private var selectedTabIndex = 0 // 0: Suhu, 1: Level Air, 2: Energi
+
+    private var firestoreListenerRegistration: com.google.firebase.firestore.ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +50,7 @@ class RiwayatDataActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainRiwayatData)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
@@ -57,7 +60,11 @@ class RiwayatDataActivity : AppCompatActivity() {
 
         updateDateDisplay()
         selectTab(0)
-        listenRealtimeDatabase()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        firestoreListenerRegistration?.remove()
     }
 
     private fun initViews() {
@@ -102,7 +109,7 @@ class RiwayatDataActivity : AppCompatActivity() {
                 selectedCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
 
                 updateDateDisplay()
-                loadHistoryDataForCurrentTab()
+                loadHistoryDataFromFirestore()
             },
             selectedCalendar.get(Calendar.YEAR),
             selectedCalendar.get(Calendar.MONTH),
@@ -126,10 +133,143 @@ class RiwayatDataActivity : AppCompatActivity() {
             tabs[i].setTextColor(if (isSelected) ContextCompat.getColor(this, android.R.color.white) else ContextCompat.getColor(this, R.color.sp_muted))
         }
 
-        loadHistoryDataForCurrentTab()
+        loadHistoryDataFromFirestore()
     }
 
-    private fun loadHistoryDataForCurrentTab() {
+    private fun loadHistoryDataFromFirestore() {
+        firestoreListenerRegistration?.remove()
+
+        val firestore = FirebaseFirestore.getInstance()
+        val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedCalendar.time)
+
+        // Read real-time history logs for selected date from Cloud Firestore collection "riwayat" -> doc(dateStr) -> subcollection "logs"
+        firestoreListenerRegistration = firestore.collection("riwayat")
+            .document(dateStr)
+            .collection("logs")
+            .orderBy("timestamp")
+            .addSnapshotListener { querySnapshot, error ->
+                if (error != null) {
+                    Log.e("RiwayatDataActivity", "Firestore error: ${error.message}")
+                    listenRealtimeDatabaseFallback(dateStr)
+                    return@addSnapshotListener
+                }
+
+                if (querySnapshot != null && !querySnapshot.isEmpty) {
+                    val newList = mutableListOf<RiwayatData>()
+                    val pointsList = mutableListOf<Float>()
+
+                    for (doc in querySnapshot.documents) {
+                        val jam = doc.getString("jam") ?: doc.id
+                        when (selectedTabIndex) {
+                            0 -> { // Suhu
+                                val valNum = doc.getDouble("suhu")?.toFloat()
+                                if (valNum != null) {
+                                    newList.add(RiwayatData(jam, String.format(Locale.getDefault(), "%.1f °C", valNum)))
+                                    pointsList.add(valNum)
+                                }
+                            }
+                            1 -> { // Level Air
+                                val valNum = doc.getDouble("level_air")?.toFloat()
+                                if (valNum != null) {
+                                    newList.add(RiwayatData(jam, String.format(Locale.getDefault(), "%.1f %%", valNum)))
+                                    pointsList.add(valNum)
+                                }
+                            }
+                            2 -> { // Energi
+                                val valNum = doc.getDouble("energi")?.toFloat()
+                                if (valNum != null) {
+                                    newList.add(RiwayatData(jam, String.format(Locale.getDefault(), "%.1f W", valNum)))
+                                    pointsList.add(valNum)
+                                }
+                            }
+                        }
+                    }
+
+                    if (newList.isNotEmpty() && pointsList.isNotEmpty()) {
+                        adapter.updateData(newList)
+                        val colorHex = when (selectedTabIndex) {
+                            0 -> "#FF5252"
+                            1 -> "#0288D1"
+                            else -> "#20B978"
+                        }
+                        historyChartView.setChartData(pointsList, colorHex)
+                        return@addSnapshotListener
+                    }
+                }
+
+                // If Firestore collection for this date is empty, fallback to RTDB or baseline data
+                listenRealtimeDatabaseFallback(dateStr)
+            }
+    }
+
+    private fun listenRealtimeDatabaseFallback(dateStr: String) {
+        try {
+            val database = FirebaseDatabase.getInstance("https://smartpondapp-default-rtdb.asia-southeast1.firebasedatabase.app/")
+            val ref = database.getReference("SmartPond").child("riwayat")
+
+            ref.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!snapshot.exists()) {
+                        loadFallbackBaselineData()
+                        return
+                    }
+
+                    val sensorKey = when (selectedTabIndex) {
+                        0 -> "suhu"
+                        1 -> "level_air"
+                        else -> "energi"
+                    }
+
+                    val targetNode = if (snapshot.hasChild(dateStr) && snapshot.child(dateStr).hasChild(sensorKey)) {
+                        snapshot.child(dateStr).child(sensorKey)
+                    } else if (snapshot.hasChild(sensorKey)) {
+                        snapshot.child(sensorKey)
+                    } else {
+                        null
+                    }
+
+                    if (targetNode != null && targetNode.childrenCount > 0) {
+                        val newList = mutableListOf<RiwayatData>()
+                        val points = mutableListOf<Float>()
+
+                        for (child in targetNode.children) {
+                            val timeKey = child.key ?: continue
+                            val valStr = child.value?.toString() ?: continue
+                            newList.add(RiwayatData(timeKey, valStr))
+
+                            val floatVal = valStr.replace(Regex("[^0-9.]"), "").toFloatOrNull()
+                            if (floatVal != null) {
+                                points.add(floatVal)
+                            }
+                        }
+
+                        if (newList.isNotEmpty()) {
+                            adapter.updateData(newList)
+                            val colorHex = when (selectedTabIndex) {
+                                0 -> "#FF5252"
+                                1 -> "#0288D1"
+                                else -> "#20B978"
+                            }
+                            historyChartView.setChartData(points, colorHex)
+                            return
+                        }
+                    }
+
+                    loadFallbackBaselineData()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("RiwayatDataActivity", "RTDB Fallback Error: ${error.message}")
+                    loadFallbackBaselineData()
+                }
+            })
+        } catch (e: Exception) {
+            Log.e("RiwayatDataActivity", "Firebase init error: ${e.message}")
+            loadFallbackBaselineData()
+        }
+    }
+
+    private fun loadFallbackBaselineData() {
         val chartPoints: List<Float>
         val colorHex: String
         val detailDataList = mutableListOf<RiwayatData>()
@@ -159,14 +299,16 @@ class RiwayatDataActivity : AppCompatActivity() {
             }
             1 -> {
                 colorHex = "#0288D1"
-                chartPoints = listOf(95f, 95f, 94f, 95f, 96f, 95f, 95f, 94f, 95f, 95f)
+                chartPoints = listOf(90.0f, 91.5f, 92.0f, 94.0f, 95.0f, 95.5f, 96.0f, 95.0f, 94.5f, 95.0f)
                 detailDataList.addAll(listOf(
-                    RiwayatData("00:00", "Normal (95%)"),
-                    RiwayatData("01:00", "Normal (95%)"),
-                    RiwayatData("02:00", "Normal (94%)"),
-                    RiwayatData("03:00", "Normal (95%)"),
-                    RiwayatData("04:00", "Normal (96%)"),
-                    RiwayatData("05:00", "Normal (95%)")
+                    RiwayatData("00:00", "90.0 %"),
+                    RiwayatData("01:00", "91.5 %"),
+                    RiwayatData("02:00", "92.0 %"),
+                    RiwayatData("03:00", "94.0 %"),
+                    RiwayatData("04:00", "95.0 %"),
+                    RiwayatData("05:00", "95.5 %"),
+                    RiwayatData("06:00", "96.0 %"),
+                    RiwayatData("07:00", "95.0 %")
                 ))
             }
             else -> {
@@ -185,59 +327,5 @@ class RiwayatDataActivity : AppCompatActivity() {
 
         historyChartView.setChartData(chartPoints, colorHex)
         adapter.updateData(detailDataList)
-    }
-
-    private fun listenRealtimeDatabase() {
-        try {
-            val database = FirebaseDatabase.getInstance("https://smartpondapp-default-rtdb.asia-southeast1.firebasedatabase.app/")
-            val ref = database.getReference("SmartPond").child("riwayat")
-
-            ref.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (!snapshot.exists()) return
-
-                    val sensorKey = when (selectedTabIndex) {
-                        0 -> "suhu"
-                        1 -> "level_air"
-                        else -> "energi"
-                    }
-
-                    if (snapshot.hasChild(sensorKey)) {
-                        val sensorSnapshot = snapshot.child(sensorKey)
-                        val newList = mutableListOf<RiwayatData>()
-                        val points = mutableListOf<Float>()
-
-                        for (child in sensorSnapshot.children) {
-                            val time = child.key ?: continue
-                            val valueStr = child.value?.toString() ?: continue
-                            newList.add(RiwayatData(time, valueStr))
-
-                            val floatVal = valueStr.replace(Regex("[^0-9.]"), "").toFloatOrNull()
-                            if (floatVal != null) {
-                                points.add(floatVal)
-                            }
-                        }
-
-                        if (newList.isNotEmpty()) {
-                            adapter.updateData(newList)
-                            if (points.size >= 2) {
-                                val colorHex = when (selectedTabIndex) {
-                                    0 -> "#FF5252"
-                                    1 -> "#0288D1"
-                                    else -> "#20B978"
-                                }
-                                historyChartView.setChartData(points, colorHex)
-                            }
-                        }
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("RiwayatDataActivity", "Database error: ${error.message}")
-                }
-            })
-        } catch (e: Exception) {
-            Log.e("RiwayatDataActivity", "Firebase init error: ${e.message}")
-        }
     }
 }
