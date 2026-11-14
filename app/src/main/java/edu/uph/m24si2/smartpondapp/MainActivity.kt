@@ -28,7 +28,7 @@ import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var btnMenu: ImageButton
+    private lateinit var btnSettings: ImageButton
     private lateinit var btnNotification: ImageButton
     private lateinit var viewStatusDot: View
     private lateinit var ivWifiIcon: ImageView
@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        btnMenu = findViewById(R.id.btnMenu)
+        btnSettings = findViewById(R.id.btnSettings)
         btnNotification = findViewById(R.id.btnNotification)
         viewStatusDot = findViewById(R.id.viewStatusDot)
         ivWifiIcon = findViewById(R.id.ivWifiIcon)
@@ -89,8 +89,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupMenuNavigation() {
-        btnMenu.setOnClickListener {
-            startActivity(Intent(this, RiwayatDataActivity::class.java))
+        btnSettings.setOnClickListener {
+            startActivity(Intent(this, PengaturanActivity::class.java))
         }
 
         btnNotification.setOnClickListener {
@@ -118,12 +118,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.nav_energi -> {
                     startActivity(Intent(this, EnergiActivity::class.java))
-                    overridePendingTransition(0, 0)
-                    finish()
-                    true
-                }
-                R.id.nav_pengaturan -> {
-                    startActivity(Intent(this, PengaturanActivity::class.java))
                     overridePendingTransition(0, 0)
                     finish()
                     true

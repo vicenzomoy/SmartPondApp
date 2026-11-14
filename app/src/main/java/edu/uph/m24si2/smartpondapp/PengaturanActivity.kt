@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -23,6 +24,7 @@ import com.google.firebase.database.ValueEventListener
 
 class PengaturanActivity : AppCompatActivity() {
 
+    private lateinit var btnBack: ImageButton
     private lateinit var tvAppVersion: TextView
     private lateinit var tvAppDescription: TextView
     private lateinit var tvDeveloperInfo: TextView
@@ -54,6 +56,7 @@ class PengaturanActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
+        btnBack = findViewById(R.id.btnBack)
         tvAppVersion = findViewById(R.id.tvAppVersion)
         tvAppDescription = findViewById(R.id.tvAppDescription)
         tvDeveloperInfo = findViewById(R.id.tvDeveloperInfo)
@@ -65,6 +68,12 @@ class PengaturanActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+        btnBack.setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
+            overridePendingTransition(0, 0)
+            finish()
+        }
+
         btnChangePassword.setOnClickListener {
             showChangePasswordDialog()
         }
@@ -184,7 +193,6 @@ class PengaturanActivity : AppCompatActivity() {
 
     private fun setupBottomNavigation() {
         bottomNavigation.setOnItemSelectedListener(null)
-        bottomNavigation.selectedItemId = R.id.nav_pengaturan
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_beranda -> {
@@ -211,7 +219,6 @@ class PengaturanActivity : AppCompatActivity() {
                     finish()
                     true
                 }
-                R.id.nav_pengaturan -> true
                 else -> false
             }
         }

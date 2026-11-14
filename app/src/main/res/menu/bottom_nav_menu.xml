@@ -16,8 +16,4 @@
         android:id="@+id/nav_energi"
         android:icon="@drawable/ic_nav_energy"
         android:title="@string/nav_energi" />
-    <item
-        android:id="@+id/nav_pengaturan"
-        android:icon="@drawable/ic_nav_settings"
-        android:title="@string/nav_pengaturan" />
 </menu>

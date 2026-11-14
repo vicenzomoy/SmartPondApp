@@ -11,7 +11,7 @@
     <string name="status_normal">• Normal</string>
     <string name="nav_beranda">Beranda</string>
     <string name="nav_sensor">Sensor</string>
-    <string name="nav_kontrol">Kontrol</string>
+    <string name="nav_kontrol">Feeder</string>
     <string name="nav_energi">Energi</string>
     <string name="nav_pengaturan">Pengaturan</string>
     <string name="cd_menu">Menu</string>

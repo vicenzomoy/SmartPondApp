@@ -19,12 +19,12 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
-            android:id="@+id/btnMenu"
+            android:id="@+id/btnSettings"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/cd_menu"
-            android:src="@drawable/ic_menu_24"
+            android:contentDescription="Pengaturan"
+            android:src="@drawable/ic_nav_settings"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -37,7 +37,7 @@
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btnNotification"
-            app:layout_constraintStart_toEndOf="@id/btnMenu"
+            app:layout_constraintStart_toEndOf="@id/btnSettings"
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView

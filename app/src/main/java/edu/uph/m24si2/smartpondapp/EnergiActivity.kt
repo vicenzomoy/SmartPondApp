@@ -229,12 +229,6 @@ class EnergiActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_energi -> true
-                R.id.nav_pengaturan -> {
-                    startActivity(Intent(this, PengaturanActivity::class.java))
-                    overridePendingTransition(0, 0)
-                    finish()
-                    true
-                }
                 else -> false
             }
         }
